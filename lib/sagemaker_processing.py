@@ -28,8 +28,8 @@ def start_sagemaker_processing_job(infile,machine_type, environment_variables):
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
     # Specify the S3 bucket and file paths
-    bucket = "traffmind-client-unprocessed-jamar"
-    out_bucket = "traffmind-client-processed-jamar"
+    bucket = "traffmind-client-unprocessed-jamar-dev"
+    out_bucket = "traffmind-client-processed-jamar-dev"
 
     input_path = f's3://{bucket}/{infile}'
     output_path = f's3://{out_bucket}/{datetime_str}/'

@@ -7,7 +7,7 @@ st.set_page_config(layout="wide")
 # Simulated mapping of submission names to background image files.
 # Replace these with your actual data.
 
-bucket = "traffmind-client-processed-jamar"
+bucket = "traffmind-client-processed-jamar-dev"
 
 # Example list of processed videos - this list is empty to simulate the current situation
 background_images = list_files(bucket, '*', 'png')  # Update this with actual processed videos once available

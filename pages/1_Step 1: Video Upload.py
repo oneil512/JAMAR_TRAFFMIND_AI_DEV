@@ -66,7 +66,7 @@ if st.button("Submit", key='submit'):
         url = generate_presigned_url(
             s3_client,
             "put_object",
-            {"Bucket": 'traffmind-client-unprocessed-jamar', "Key": uploaded_video.name},
+            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
             1000
         )
      
