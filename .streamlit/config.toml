@@ -1,0 +1,11 @@
+[server]
+maxUploadSize=900
+enableCORS = false
+enableXsrfProtection = false
+enableWebsocketCompression = false
+
+[logger]
+
+# Level of logging: 'error', 'warning', 'info', or 'debug'.
+# Default: 'info'
+level = "debug"
