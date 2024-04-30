@@ -69,6 +69,7 @@ if st.button("Submit", key='submit'):
             {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
             1000
         )
+        print(url)
      
         response = requests.put(url, data=uploaded_video.getvalue())
 
