@@ -5,6 +5,4 @@ numpy
 tensorflow
 opencv-python-headless
 torch
-torchvision
 ultralytics
-supervision
