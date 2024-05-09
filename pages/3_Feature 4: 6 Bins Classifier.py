@@ -70,7 +70,7 @@ def detect_objects_and_draw(image):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
     # Load the model and perform detection
-    model = RTDETR('rtdetr-l.pt')  # Path to your model
+    model = RTDETR('./model/rtdetr-l.pt')  # Path to your model
     results = model(frame)[0]
     detections = sv.Detections.from_ultralytics(results)
     
