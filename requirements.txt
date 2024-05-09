@@ -7,3 +7,4 @@ opencv-contrib-python-headless
 torch
 torchvision
 ultralytics
+supervision
