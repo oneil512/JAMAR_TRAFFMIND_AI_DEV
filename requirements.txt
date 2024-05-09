@@ -2,6 +2,7 @@ boto3
 pandas
 Pillow
 numpy
+tensorflow
 opencv-python-headless
 torch
 torchvision
