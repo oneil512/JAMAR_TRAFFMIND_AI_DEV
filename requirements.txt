@@ -1,2 +1,7 @@
 boto3
 pandas
+Pillow
+numpy
+opencv-python
+torch
+torchvision
