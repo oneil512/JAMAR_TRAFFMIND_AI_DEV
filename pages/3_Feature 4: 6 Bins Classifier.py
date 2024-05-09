@@ -1,11 +1,11 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-from ultralytics import RTDETR, YOLO
 import supervision as sv
 import torch
 from torchvision import transforms
 import cv2
+from ultralytics import RTDETR, YOLO
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class_model_path = './model/yolov8-cls.yaml'
