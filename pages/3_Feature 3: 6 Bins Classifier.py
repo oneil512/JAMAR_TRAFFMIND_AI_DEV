@@ -6,6 +6,8 @@ import torch
 from torchvision import transforms
 import cv2
 from ultralytics import RTDETR, YOLO
+from lib import download_file
+download_file('traffmind-models, 'rtdetr-l.pt', 'rtdetr-l.pt')
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class_model_path = './model/yolov8-cls.yaml'
@@ -70,7 +72,7 @@ def detect_objects_and_draw(image):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
     # Load the model and perform detection
-    model = RTDETR('./model/rtdetr-l.pt')  # Path to your model
+    model = RTDETR('rtdetr-l.pt')  # Path to your model
     results = model(frame)[0]
     detections = sv.Detections.from_ultralytics(results)
     
