@@ -7,7 +7,7 @@ from torchvision import transforms
 import cv2
 from ultralytics import RTDETR, YOLO
 from lib import download_file
-download_file('traffmind-models, 'rtdetr-l.pt', 'rtdetr-l.pt')
+download_file('traffmind-models', 'rtdetr-l.pt', 'rtdetr-l.pt')
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class_model_path = './model/yolov8-cls.yaml'
