@@ -1,11 +1,11 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-import supervision as sv
 import torch
 from torchvision import transforms
 import cv2
 from ultralytics import RTDETR, YOLO
+import supervision as sv
 from lib import download_file
 download_file('traffmind-models', 'rtdetr-l.pt', 'rtdetr-l.pt')
 
