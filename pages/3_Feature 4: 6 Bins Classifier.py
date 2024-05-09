@@ -8,8 +8,8 @@ import torch
 from torchvision import transforms
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-class_model_path = '/model/yolov8-cls.yaml'
-check_point_dir = '/model/yolov8n-cls-20240508-002451.pt'
+class_model_path = './model/yolov8-cls.yaml'
+check_point_dir = './model/yolov8n-cls-20240508-002451.pt'
 
 state_dict = torch.load(check_point_dir, map_location=device)
 class_model = YOLO(class_model_path)  # Assuming YOLO is a class you have defined or imported
