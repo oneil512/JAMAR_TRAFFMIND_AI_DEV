@@ -87,7 +87,7 @@ def detect_objects_and_draw(image):
         if detections.data['class_name'][i] == 'motorcycle':
             result = 'bin 1'
         else:
-            class_results = classification_model(cropped_frame)
+            class_results = class_model(cropped_frame)
             result = get_class_of_cropped_frame(cropped_frame, class_model, device)
         class_results.append(result)
     pil_frame = apply_detections_to_frame(original_frame, detections, class_results)
