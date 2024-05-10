@@ -40,16 +40,16 @@ st.markdown("""
 """)
 
 # File uploader for video selection
-uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'])
+uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'], accept_multiple_files=False, on_change=upload)
 
 # Step 2: Submit
 st.markdown("""
 **2. Submit**: Click the submit button to send your video for processing.
 """)
 
-# Submit button
-if st.button("Submit", key='submit'):
+def upload():
     if uploaded_video is not None:
+        print(f"Uploaded video: {uploaded_video}")
         st.sidebar.success("Your submission is received!")
         print(uploaded_video.name)
 
@@ -70,7 +70,7 @@ if st.button("Submit", key='submit'):
             1000
         )
         print(url)
-     
+        
         response = requests.put(url, data=uploaded_video.getvalue())
 
         if response.status_code == 200:
