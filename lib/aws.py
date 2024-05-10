@@ -91,7 +91,7 @@ def get_s3_status():
     # merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
     merged_df = pd.merge(merged_df, processed_files_df, on='Key', how='left')
     # add download link if Status is Completed
-    merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url("traffmind-client-processed-jamar-dev", x['file_path']) if x['ProcessingJobStatus'] == 'Completed' else None, axis=1)
+    merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url("traffmind-client-processed-jamar-dev", x['file_path']) if (x['ProcessingJobStatus'] == 'Completed' and type(x['file_path']) is str) else None, axis=1)
 
     # Rename columns and filter necessary fields
     merged_df = merged_df.rename(columns={'Key': 'File Name', 'CreationTime': 'Start Time', 'ProcessingEndTime': 'End Time', 'ProcessingJobStatus': 'Status'})
