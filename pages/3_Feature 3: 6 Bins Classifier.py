@@ -26,6 +26,14 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
 ])
+color_map = {
+        'bin 1': 'red',
+        'bin 2': 'blue',
+        'bin 3': 'green',
+        'bin 4': 'yellow',
+        'bin 5': 'purple',
+        'bin 6': 'orange'
+    }
 
 def get_class_of_cropped_frame(cropped_frame, model, device):
     pil_image = Image.fromarray(cropped_frame)
@@ -45,16 +53,6 @@ def apply_detections_to_frame(frame, detections, class_results):
     # Get bounding box coordinates and class names
     detections_xyxy = detections.xyxy
     detections_class = class_results
-
-    # Define a color map for different classes
-    color_map = {
-        'bin 1': 'red',
-        'bin 2': 'blue',
-        'bin 3': 'green',
-        'bin 4': 'yellow',
-        'bin 5': 'purple',
-        'bin 6': 'orange'
-    }
 
     # Iterate over detections and class names
     for det, cls in zip(detections_xyxy, detections_class):
@@ -78,7 +76,7 @@ def detect_objects_and_draw(image):
     
     # Filter detections and convert to PIL
     detections = detections[(detections['class_name'] == 'car') | (detections['class_name'] == 'truck') | (detections['class_name'] == 'bus') | (detections['class_name'] == 'motorcycle')]
-    detections = detections[(detections.confidence > 0.4)]
+    detections = detections[(detections.confidence > 0.6)]
     class_results = []    
     for i in range(len(detections.xyxy)):
         det = detections.xyxy[i]
@@ -87,12 +85,12 @@ def detect_objects_and_draw(image):
         if detections.data['class_name'][i] == 'motorcycle':
             result = 'bin 1'
         else:
-            class_results = class_model(cropped_frame)
             result = get_class_of_cropped_frame(cropped_frame, class_model, device)
         class_results.append(result)
     pil_frame = apply_detections_to_frame(original_frame, detections, class_results)
     
     return pil_frame
+
 
 def app():
     st.set_page_config(page_title="Vehicle Detection Interface", layout="wide")
@@ -103,7 +101,18 @@ def app():
     st.markdown("""
     **Instructions:** Upload an image and the system will detect vehicles and highlight them.
     """)
-    
+    # add text desciptions for bins and colored
+    st.markdown(f"""
+        <div style="background-color:black; padding:10px;">
+        <span style="color:{color_map['bin 1']};">Bin 1: Motorcycles</span>, 
+        <span style="color:{color_map['bin 2']};">Bin 2: Passenger Vehicles</span>, 
+        <span style="color:{color_map['bin 3']};">Bin 3: Light Trucks</span>, 
+        <span style="color:{color_map['bin 4']};">Bin 4: Buses</span>, 
+        <span style="color:{color_map['bin 5']};">Bin 5: Single-unit Vehicles</span>, 
+        <span style="color:{color_map['bin 6']};">Bin 6: Combination Units</span>
+        </div>
+        """, unsafe_allow_html=True)
+                
     # Upload Image
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png"])
     
