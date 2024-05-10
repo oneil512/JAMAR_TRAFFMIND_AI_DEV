@@ -103,13 +103,6 @@ if uploaded_video is not None:
     if response.status_code == 200:
         run(uploaded_video.name)
 
-else:
-    st.sidebar.error("Please upload a video and provide a name for your submission.")
-
-# Step 2: Submit
-st.markdown("""
-**2. Submit**: Click the submit button to send your video for processing.
-""")
 
 # Step 3: Check Status
 st.markdown("""
