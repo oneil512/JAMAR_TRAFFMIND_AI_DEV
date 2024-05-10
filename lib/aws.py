@@ -31,7 +31,6 @@ def list_files(bucket_name, prefix, file_type='*'):
     return files
 
 def get_s3_status():
-
     # Initialize SageMaker client
     sm = boto3.client("sagemaker", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     jobs = sm.list_processing_jobs()  # List SageMaker processing jobs
@@ -43,20 +42,33 @@ def get_s3_status():
 
     # Initialize S3 client
     s3 = boto3.client("s3", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    unprocessed_files = s3.list_objects_v2(Bucket="traffmind-client-unprocessed-jamar-dev")
-    status_df = pd.DataFrame(unprocessed_files['Contents'])
-    status_df['hash_name'] = status_df['Key'].apply(lambda x: hashlib.md5(x.encode()).hexdigest())
-    status_df['LastModified'] = pd.to_datetime(status_df['LastModified'], utc=True)
+    
+    # Check if the bucket is empty
+    try:
+        unprocessed_files = s3.list_objects_v2(Bucket="traffmind-client-unprocessed-jamar-dev")
+        status_df = pd.DataFrame(unprocessed_files['Contents'])
+        status_df['hash_name'] = status_df['Key'].apply(lambda x: hashlib.md5(x.encode()).hexdigest())
+        status_df['LastModified'] = pd.to_datetime(status_df['LastModified'], utc=True)
+        # keep key without extension
+        status_df['Key'] = status_df['Key'].apply(lambda x: '.'.join(x.split('.')[:-1]))
+    except KeyError:
+        status_df = pd.DataFrame(columns=['Key', 'LastModified', 'hash_name'])
+    
+    # Check if the processed files exist
+    try:
+        processed_files = s3.list_objects_v2(Bucket="traffmind-client-processed-jamar-dev")
+        processed_files_df = pd.DataFrame(processed_files['Contents'])
+        processed_files_df['file_path'] = processed_files_df['Key']
 
-    processed_files = s3.list_objects_v2(Bucket="traffmind-client-processed-jamar-dev")
-    processed_files_df = pd.DataFrame(processed_files['Contents'])
-    processed_files_df['file_path'] = processed_files_df['Key']
-    processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
-    processed_files_df['extension'] = processed_files_df['Key'].apply(lambda x: x.split('.')[1])
-    processed_files_df = processed_files_df[processed_files_df['extension'] == 'mp4']
-    processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('_2024-')[0])
-    processed_files_df = processed_files_df[['Key', 'file_path']]
-
+        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
+        processed_files_df['extension'] = processed_files_df['Key'].apply(lambda x: x.split('.')[-1])
+        # remove extension from Key
+        processed_files_df = processed_files_df[processed_files_df['extension'].isin(['mp4', 'h264'])]
+        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('_2024-')[0])
+        processed_files_df = processed_files_df[['Key', 'file_path']]
+    except KeyError:
+        processed_files_df = pd.DataFrame(columns=['Key', 'file_path'])
+    
     # Merge DataFrames on hash_name
     merged_df = pd.merge(status_df, jobs_df, on='hash_name', how='left')
     time_difference = merged_df['LastModified'] - merged_df['CreationTime']
@@ -67,8 +79,8 @@ def get_s3_status():
     est = timezone('America/New_York')
     merged_df['CreationTime'] = merged_df['CreationTime'].dt.tz_convert(est).dt.strftime('%Y-%m-%d %I:%M %p')
     merged_df['ProcessingEndTime'] = merged_df['ProcessingEndTime'].dt.tz_convert(est).dt.strftime('%Y-%m-%d %I:%M %p')
-    merged_df['Key'] = merged_df['Key'].str.replace('.mp4', '', regex=False)
-    merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
+    # merged_df['Key'] = merged_df['Key'].str.replace('.mp4', '', regex=False)
+    # merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
     merged_df = pd.merge(merged_df, processed_files_df, on='Key', how='left')
     # add download link if Status is Completed
     merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url("traffmind-client-processed-jamar-dev", x['file_path']) if x['ProcessingJobStatus'] == 'Completed' else None, axis=1)
