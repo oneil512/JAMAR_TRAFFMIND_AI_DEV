@@ -79,11 +79,16 @@ def detect_objects_and_draw(image):
     # Filter detections and convert to PIL
     detections = detections[(detections['class_name'] == 'car') | (detections['class_name'] == 'truck') | (detections['class_name'] == 'bus') | (detections['class_name'] == 'motorcycle')]
     detections = detections[(detections.confidence > 0.4)]
-    class_results = []
-    for box in detections.xyxy:
-        x1, y1, x2, y2 = map(int, box)  # Convert coordinates to integers
+    class_results = []    
+    for i in range(len(detections.xyxy)):
+        det = detections.xyxy[i]
+        x1, y1, x2, y2 = map(int, det)  # Convert coordinates to integers
         cropped_frame = frame[y1:y2, x1:x2]
-        result = get_class_of_cropped_frame(cropped_frame, class_model, device)
+        if detections.data['class_name'][i] == 'motorcycle':
+            result = 'bin 1'
+        else:
+            class_results = classification_model(cropped_frame)
+            result = get_class_of_cropped_frame(cropped_frame, class_model, device)
         class_results.append(result)
     pil_frame = apply_detections_to_frame(original_frame, detections, class_results)
     
