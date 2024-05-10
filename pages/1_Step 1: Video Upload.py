@@ -6,6 +6,39 @@ import requests
 from lib import run
 import os
 
+def upload():
+    if uploaded_video is not None:
+        print(f"Uploaded video: {uploaded_video}")
+        st.sidebar.success("Your submission is received!")
+        print(uploaded_video.name)
+
+        # Read keys in from environment variables
+        access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+        s3_client = boto3.client(
+            "s3",
+            region_name='us-east-2',
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+        url = generate_presigned_url(
+            s3_client,
+            "put_object",
+            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
+            1000
+        )
+        print(url)
+        
+        response = requests.put(url, data=uploaded_video.getvalue())
+
+        if response.status_code == 200:
+            run(uploaded_video.name)
+
+    else:
+        st.sidebar.error("Please upload a video and provide a name for your submission.")
+
+
 def generate_presigned_url(s3_client, client_method, method_parameters, expires_in):
     """
     Generate a presigned Amazon S3 URL that can be used to perform an action.
@@ -46,38 +79,6 @@ uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'], acc
 st.markdown("""
 **2. Submit**: Click the submit button to send your video for processing.
 """)
-
-def upload():
-    if uploaded_video is not None:
-        print(f"Uploaded video: {uploaded_video}")
-        st.sidebar.success("Your submission is received!")
-        print(uploaded_video.name)
-
-        # Read keys in from environment variables
-        access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-
-        s3_client = boto3.client(
-            "s3",
-            region_name='us-east-2',
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key
-        )
-        url = generate_presigned_url(
-            s3_client,
-            "put_object",
-            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
-            1000
-        )
-        print(url)
-        
-        response = requests.put(url, data=uploaded_video.getvalue())
-
-        if response.status_code == 200:
-            run(uploaded_video.name)
-
-    else:
-        st.sidebar.error("Please upload a video and provide a name for your submission.")
 
 # Step 3: Check Status
 st.markdown("""
