@@ -3,41 +3,8 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import requests
-from lib import run
+from lib import run, send_discord_notification
 import os
-
-def upload():
-    if uploaded_video is not None:
-        print(f"Uploaded video: {uploaded_video}")
-        st.sidebar.success("Your submission is received!")
-        print(uploaded_video.name)
-
-        # Read keys in from environment variables
-        access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-
-        s3_client = boto3.client(
-            "s3",
-            region_name='us-east-2',
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key
-        )
-        url = generate_presigned_url(
-            s3_client,
-            "put_object",
-            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
-            1000
-        )
-        print(url)
-        
-        response = requests.put(url, data=uploaded_video.getvalue())
-
-        if response.status_code == 200:
-            run(uploaded_video.name)
-
-    else:
-        st.sidebar.error("Please upload a video and provide a name for your submission.")
-
 
 def generate_presigned_url(s3_client, client_method, method_parameters, expires_in):
     """
@@ -73,36 +40,44 @@ st.markdown("""
 """)
 
 # File uploader for video selection
-uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'], accept_multiple_files=False)
+uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'])
 
-if uploaded_video is not None:
-    print(f"Uploaded video: {uploaded_video}")
-    st.sidebar.success("Your submission is received!")
-    print(uploaded_video.name)
+# Step 2: Submit
+st.markdown("""
+**2. Submit**: Click the submit button to send your video for processing.
+""")
 
-    # Read keys in from environment variables
-    access_key = os.getenv("AWS_ACCESS_KEY_ID")
-    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+# Submit button
+if st.button("Submit", key='submit'):
+    if uploaded_video is not None:
+        send_discord_notification(uploaded_video.name, uploaded_video.size / (1024 * 1024))
+        st.sidebar.success("Your submission is received!")
+        print(uploaded_video.name)
 
-    s3_client = boto3.client(
-        "s3",
-        region_name='us-east-2',
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key
-    )
-    url = generate_presigned_url(
-        s3_client,
-        "put_object",
-        {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
-        1000
-    )
-    print(url)
-    
-    response = requests.put(url, data=uploaded_video.getvalue())
+        # Read keys in from environment variables
+        access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-    if response.status_code == 200:
-        run(uploaded_video.name)
+        s3_client = boto3.client(
+            "s3",
+            region_name='us-east-2',
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+        url = generate_presigned_url(
+            s3_client,
+            "put_object",
+            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
+            1000
+        )
+     
+        response = requests.put(url, data=uploaded_video.getvalue())
 
+        if response.status_code == 200:
+            run(uploaded_video.name)
+
+    else:
+        st.sidebar.error("Please upload a video and provide a name for your submission.")
 
 # Step 3: Check Status
 st.markdown("""
@@ -111,6 +86,6 @@ st.markdown("""
 
 st.page_link(
     "pages/1_Step 2: Traffic Tracker and Classifier.py",
-    label=":blue[Step 2: Traffic Tracker]",
+    label=":blue[Step 2: Traffic Tracker and Classifier]",
     disabled=False
 )
