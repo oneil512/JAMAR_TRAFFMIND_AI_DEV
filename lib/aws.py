@@ -51,7 +51,11 @@ def get_s3_status():
         status_df['LastModified'] = pd.to_datetime(status_df['LastModified'], utc=True)
         # keep key without extension
         status_df['Key'] = status_df['Key'].apply(lambda x: '.'.join(x.split('.')[:-1]))
-    except KeyError:
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        status_df = pd.DataFrame(columns=['Key', 'LastModified', 'hash_name'])
+    except Exception as e:
+        print(f"Exception: {e}")
         status_df = pd.DataFrame(columns=['Key', 'LastModified', 'hash_name'])
     
     # Check if the processed files exist
@@ -66,7 +70,11 @@ def get_s3_status():
         processed_files_df = processed_files_df[processed_files_df['extension'].isin(['mp4', 'h264'])]
         processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('_2024-')[0])
         processed_files_df = processed_files_df[['Key', 'file_path']]
-    except KeyError:
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        processed_files_df = pd.DataFrame(columns=['Key', 'file_path'])
+    except Exception as e:
+        print(f"Exception: {e}")
         processed_files_df = pd.DataFrame(columns=['Key', 'file_path'])
     
     # Merge DataFrames on hash_name
