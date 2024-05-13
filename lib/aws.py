@@ -93,7 +93,9 @@ def get_s3_status():
     except Exception as e:
         print(f"exception: {e}")
         merged_df = pd.DataFrame(columns=['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link'])
-    
+
+        # order by End Time
+        merged_df = merged_df.sort_values(by='End Time', ascending=False)
     return merged_df
 
 
