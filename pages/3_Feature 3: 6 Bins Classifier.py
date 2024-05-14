@@ -19,7 +19,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 client = openai.Client(api_key=openai_api_key)
 
 # Download the model file
-download_file('traffmind-models', 'rtdetr-l.pt', 'rtdetr-l.pt')
+download_file('traffmind-models', 'rtdetr-l.pt', 'rtdetr-l.pt', region='us-east-1')
 
 # Load the original classification model
 class_model_path = './model/yolov8-cls.yaml'
