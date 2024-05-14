@@ -88,13 +88,19 @@ def get_classes_of_cropped_frames_model_B(vehicles_base64):
                     "type": "text",
                     "text": "Classify the vehicles in these images into one of the following categories:\n"
                             "1. Motorcycles (F1)\n"
-                            "2. Passenger Vehicles (F2)\n"
-                            "3. Light trucks (F3)\n"
+                            "2. Autos (F2)\n"
+                            "3. 2 axle, 4-tire pickups, vans (F3)\n"
                             "4. Buses (F4)\n"
-                            "5. Single-unit vehicles (F5)\n"
-                            "6. Combination Unit (F6)\n"
-                            "7. Other categories (F7 to F13)\n"
-                            "Note that you have to return in the same order as the images using this format without any text: 1, 2, 3, 4, 5, 6, 7\n"
+                            "5. 2 axle, 6-tire single-unit trucks (F5)\n"
+                            "6. 3 axle single-unit trucks (F6)\n"
+                            "7. 4 or more axle single-unit trucks (F7)\n"
+                            "8. 4 or less axle vehicles, single-trailer trucks (F8)\n"
+                            "9. 5 axle, single-trailer trucks (F9)\n"
+                            "10. 6 or more axle, single-trailer trucks (F10)\n"
+                            "11. 5 axle multi-trailer trucks (F11)\n"
+                            "12. 6 axle multi-trailer trucks (F12)\n"
+                            "13. 7 or more axle multi-trailer trucks (F13)\n"
+                            "Note that you have to return in the same order as the images using this format without any text: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13\n"
                 }
             ]
         }
