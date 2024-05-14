@@ -45,16 +45,22 @@ color_map = {
     'bin 3': 'green',
     'bin 4': 'yellow',
     'bin 5': 'purple',
-    'bin 6': 'orange'
+    'bin 6': 'orange',
+    'bin 7': 'pink',
+    'bin 8': 'brown',
+    'bin 9': 'gray',
+    'bin 10': 'cyan',
+    'bin 11': 'magenta',
+    'bin 12': 'lime',
+    'bin 13': 'maroon'
 }
-
 
 def get_class_of_cropped_frame(cropped_frame, model, device):
     pil_image = Image.fromarray(cropped_frame)
     image_tensor = transform(pil_image).unsqueeze(0).to(device)
     with torch.no_grad():
         predictions = model(image_tensor)
-    classes = ['2', '3', '4', '5', '6']
+    classes = [str(i) for i in range(13)]
     top_class_idx = torch.argmax(predictions, dim=1).item()
     top_class = classes[top_class_idx]
     return top_class
@@ -81,13 +87,20 @@ def get_classes_of_cropped_frames_model_B(vehicles_base64):
                 {
                     "type": "text",
                     "text": "Classify the vehicles in these images into one of the following categories:\n"
-                            "1. Motorcycles (MC)\n"
-                            "2. Passenger Vehicles (PV)\n"
-                            "3. Light trucks (LT)\n"
-                            "4. Buses (BS)\n"
-                            "5. Single-unit vehicles (SU)\n"
-                            "6. Combination Unit (CU)\n"
-                            "Note that you have to return in the same order as the images using this format without any text: 1, 2, 3, 4, 5, 6\n"
+                            "1. Motorcycles (F1)\n"
+                            "2. Autos (F2)\n"
+                            "3. 2 axle, 4-tire pickups, vans (F3)\n"
+                            "4. Buses (F4)\n"
+                            "5. 2 axle, 6-tire single-unit trucks (F5)\n"
+                            "6. 3 axle single-unit trucks (F6)\n"
+                            "7. 4 or more axle single-unit trucks (F7)\n"
+                            "8. 4 or less axle vehicles, single-trailer trucks (F8)\n"
+                            "9. 5 axle, single-trailer trucks (F9)\n"
+                            "10. 6 or more axle, single-trailer trucks (F10)\n"
+                            "11. 5 axle multi-trailer trucks (F11)\n"
+                            "12. 6 axle multi-trailer trucks (F12)\n"
+                            "13. 7 or more axle multi-trailer trucks (F13)\n"
+                            "Note that you have to return in the same order as the images using this format without any text: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13\n"
                 }
             ]
         }
@@ -214,11 +227,18 @@ def app():
     st.markdown(f"""
         <div style="background-color:black; padding:10px;">
         <span style="color:{color_map['bin 1']};">Bin 1: Motorcycles</span>, 
-        <span style="color:{color_map['bin 2']};">Bin 2: Passenger Vehicles</span>, 
-        <span style="color:{color_map['bin 3']};">Bin 3: Light Trucks</span>, 
+        <span style="color:{color_map['bin 2']};">Bin 2: Autos</span>, 
+        <span style="color:{color_map['bin 3']};">Bin 3: 2 axle, 4-tire pickups, vans</span>, 
         <span style="color:{color_map['bin 4']};">Bin 4: Buses</span>, 
-        <span style="color:{color_map['bin 5']};">Bin 5: Single-unit Vehicles</span>, 
-        <span style="color:{color_map['bin 6']};">Bin 6: Combination Units</span>
+        <span style="color:{color_map['bin 5']};">Bin 5: 2 axle, 6-tire single-unit trucks</span>, 
+        <span style="color:{color_map['bin 6']};">Bin 6: 3 axle single-unit trucks</span>,
+        <span style="color:{color_map['bin 7']};">Bin 7: 4 or more axle single-unit trucks</span>,
+        <span style="color:{color_map['bin 8']};">Bin 8: 4 or less axle vehicles, single-trailer trucks</span>,
+        <span style="color:{color_map['bin 9']};">Bin 9: 5 axle, single-trailer trucks</span>,
+        <span style="color:{color_map['bin 10']};">Bin 10: 6 or more axle, single-trailer trucks</span>,
+        <span style="color:{color_map['bin 11']};">Bin 11: 5 axle multi-trailer trucks</span>,
+        <span style="color:{color_map['bin 12']};">Bin 12: 6 axle multi-trailer trucks</span>,
+        <span style="color:{color_map['bin 13']};">Bin 13: 7 or more axle multi-trailer trucks</span>
         </div>
         """, unsafe_allow_html=True)
                 
