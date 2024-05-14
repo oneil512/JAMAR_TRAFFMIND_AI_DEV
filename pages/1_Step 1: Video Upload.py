@@ -30,6 +30,8 @@ def generate_presigned_url(s3_client, client_method, method_parameters, expires_
 
 logger = logging.getLogger(__name__)
 
+unprocessed_bucket = "traffmind-client-unprocessed-jamar-dev"
+
 st.set_page_config(layout="wide")
 
 st.header("TraffMind AI Job Submission")
@@ -66,7 +68,7 @@ if st.button("Submit", key='submit'):
         url = generate_presigned_url(
             s3_client,
             "put_object",
-            {"Bucket": 'traffmind-client-unprocessed-jamar-dev', "Key": uploaded_video.name},
+            {"Bucket": unprocessed_bucket, "Key": uploaded_video.name},
             1000
         )
      
