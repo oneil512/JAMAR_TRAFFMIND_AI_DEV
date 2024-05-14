@@ -198,7 +198,7 @@ def detect_objects_and_classify_model_b(image):
 
     # Filter detections and convert to PIL
     detections = detections[(detections['class_name'] == 'car') | (detections['class_name'] == 'truck') | (detections['class_name'] == 'bus') | (detections['class_name'] == 'motorcycle')]
-    detections = detections[(detections.confidence > 0.6)]
+    detections = detections[(detections.confidence > 0.4)]
     
     vehicles = []
     for i in range(len(detections.xyxy)):
