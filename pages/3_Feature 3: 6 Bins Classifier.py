@@ -48,13 +48,24 @@ color_map = {
     'bin 6': 'orange'
 }
 
+
+def get_class_of_cropped_frame(cropped_frame, model, device):
+    pil_image = Image.fromarray(cropped_frame)
+    image_tensor = transform(pil_image).unsqueeze(0).to(device)
+    with torch.no_grad():
+        predictions = model(image_tensor)
+    classes = ['2', '3', '4', '5', '6']
+    top_class_idx = torch.argmax(predictions, dim=1).item()
+    top_class = classes[top_class_idx]
+    return top_class
+
 # Utility function to convert OpenCV image to base64
 def cv2_to_base64(image):
     _, buffer = cv2.imencode('.jpg', image)
     return base64.b64encode(buffer).decode('utf-8')
 
 # Function to get classes of cropped frames using OpenAI
-def get_classes_of_cropped_frames(vehicles_base64):
+def get_classes_of_cropped_frames_model_B(vehicles_base64):
     api_key = os.getenv("OPENAI_API_KEY")
 
     headers = {
@@ -184,7 +195,7 @@ def detect_objects_and_classify_model_b(image):
         vehicle = cv2_to_base64(cropped_frame)
         vehicles.append(vehicle)
 
-    class_results = get_classes_of_cropped_frames(vehicles)
+    class_results = get_classes_of_cropped_frames_model_B(vehicles)
     pil_frame = apply_detections_to_frame(original_frame, detections, class_results, 'Model B')
     
     return pil_frame
