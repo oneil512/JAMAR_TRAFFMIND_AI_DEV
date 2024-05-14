@@ -6,7 +6,7 @@ from torchvision import transforms
 import cv2
 from ultralytics import RTDETR, YOLO
 import supervision as sv
-from lib import download_file, send_discord_notification
+from lib import download_file
 import openai
 import os
 import base64
