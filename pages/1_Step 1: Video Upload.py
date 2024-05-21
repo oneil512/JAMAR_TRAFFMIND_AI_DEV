@@ -42,9 +42,6 @@ st.markdown("""
 
 components.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=75)
 
-# File uploader for video selection
-uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'])
-
 # Step 2: Submit
 st.markdown("""
 **2. Submit**: Click the submit button to send your video for processing.
