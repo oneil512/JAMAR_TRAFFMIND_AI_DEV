@@ -3,7 +3,7 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import requests
-# from lib import run, send_discord_notification
+from lib import run
 import os
 
 def generate_presigned_url(s3_client, client_method, method_parameters, expires_in):
@@ -52,7 +52,6 @@ st.markdown("""
 # Submit button
 if st.button("Submit", key='submit'):
     if uploaded_video is not None:
-        send_discord_notification(uploaded_video.name, uploaded_video.size / (1024 * 1024), "Video Upload", "A video has been submitted to the Video Processor!", 0x00FF00)
         st.sidebar.success("Your submission is received!")
         print(uploaded_video.name)
 
