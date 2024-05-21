@@ -75,7 +75,7 @@ if st.button("Submit", key='submit'):
      
         response = requests.put(url, data=uploaded_video.getvalue())
 
-        # if response.status_code == 200:
+        if response.status_code == 200:
             run(uploaded_video.name)
 
     else:
