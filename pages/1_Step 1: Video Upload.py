@@ -3,7 +3,7 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import requests
-from lib import run
+# from lib import run, send_discord_notification
 import os
 
 def generate_presigned_url(s3_client, client_method, method_parameters, expires_in):
@@ -30,8 +30,6 @@ def generate_presigned_url(s3_client, client_method, method_parameters, expires_
 
 logger = logging.getLogger(__name__)
 
-unprocessed_bucket = "traffmind-client-unprocessed-jamar-dev"
-
 st.set_page_config(layout="wide")
 
 st.header("TraffMind AI Job Submission")
@@ -40,6 +38,8 @@ st.header("TraffMind AI Job Submission")
 st.markdown("""
 **1. Select a Video**: You can drag and drop or select a video file to upload by clicking the uploader below. Only MP4 and h264 formats are supported.
 """)
+
+st.components.v1.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=75)
 
 # File uploader for video selection
 uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'])
@@ -52,6 +52,7 @@ st.markdown("""
 # Submit button
 if st.button("Submit", key='submit'):
     if uploaded_video is not None:
+        send_discord_notification(uploaded_video.name, uploaded_video.size / (1024 * 1024), "Video Upload", "A video has been submitted to the Video Processor!", 0x00FF00)
         st.sidebar.success("Your submission is received!")
         print(uploaded_video.name)
 
@@ -68,13 +69,13 @@ if st.button("Submit", key='submit'):
         url = generate_presigned_url(
             s3_client,
             "put_object",
-            {"Bucket": unprocessed_bucket, "Key": uploaded_video.name},
+            {"Bucket": 'traffmind-client-unprocessed-jamar', "Key": uploaded_video.name},
             1000
         )
      
         response = requests.put(url, data=uploaded_video.getvalue())
 
-        if response.status_code == 200:
+        # if response.status_code == 200:
             run(uploaded_video.name)
 
     else:
