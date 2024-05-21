@@ -39,7 +39,7 @@ st.markdown("""
 **1. Select a Video**: You can drag and drop or select a video file to upload by clicking the uploader below. Only MP4 and h264 formats are supported.
 """)
 
-st.components.v1.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=75)
+st.components.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=75)
 
 # File uploader for video selection
 uploaded_video = st.file_uploader("Upload your video", type=['mp4', 'h264'])
