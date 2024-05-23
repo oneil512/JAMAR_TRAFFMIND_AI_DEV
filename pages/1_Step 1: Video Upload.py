@@ -18,7 +18,7 @@ st.markdown("""
 """)
 
 # Iframe for file upload and submission
-components.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=100)
+# components.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=100)
 
 # Placeholder to capture the file name from the iframe
 uploaded_video_name = st.empty()
