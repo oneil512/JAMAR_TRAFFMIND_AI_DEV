@@ -8,15 +8,6 @@ import os
 import streamlit.components.v1 as components
 
 def generate_presigned_url(s3_client, client_method, method_parameters, expires_in):
-    """
-    Generate a presigned Amazon S3 URL that can be used to perform an action.
-
-    :param s3_client: A Boto3 Amazon S3 client.
-    :param client_method: The name of the client method that the URL performs.
-    :param method_parameters: The parameters of the specified client method.
-    :param expires_in: The number of seconds the presigned URL is valid for.
-    :return: The presigned URL.
-    """
     try:
         url = s3_client.generate_presigned_url(
             ClientMethod=client_method, Params=method_parameters, ExpiresIn=expires_in
@@ -42,6 +33,9 @@ st.markdown("""
 
 components.iframe("https://traffmind-upload-ui.s3.us-east-2.amazonaws.com/index.html", height=75)
 
+# Placeholder to capture the file name from the iframe
+uploaded_video_name = st.empty()
+
 # Step 2: Submit
 st.markdown("""
 **2. Submit**: Click the submit button to send your video for processing.
@@ -49,9 +43,12 @@ st.markdown("""
 
 # Submit button
 if st.button("Submit", key='submit'):
-    if uploaded_video is not None:
+    # Extract the file name from the uploaded video iframe component
+    video_name = uploaded_video_name.text_input("Enter the uploaded video file name")
+    
+    if video_name:
         st.sidebar.success("Your submission is received!")
-        print(uploaded_video.name)
+        print(video_name)
 
         # Read keys in from environment variables
         access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -66,14 +63,14 @@ if st.button("Submit", key='submit'):
         url = generate_presigned_url(
             s3_client,
             "put_object",
-            {"Bucket": 'traffmind-client-unprocessed-jamar', "Key": uploaded_video.name},
+            {"Bucket": 'traffmind-client-unprocessed-jamar', "Key": video_name},
             1000
         )
      
         response = requests.put(url, data=uploaded_video.getvalue())
 
         if response.status_code == 200:
-            run(uploaded_video.name)
+            run(video_name)
 
     else:
         st.sidebar.error("Please upload a video and provide a name for your submission.")
