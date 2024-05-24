@@ -74,7 +74,6 @@ def get_s3_status():
     try:
         processed_files = s3.list_objects_v2(Bucket=processed_bucket)
         processed_files_df = pd.DataFrame(processed_files['Contents'])
-        print(f"processed_files_df: {processed_files_df}")
         processed_files_df['file_path'] = processed_files_df['Key']
 
         # this is breaking it
@@ -102,7 +101,6 @@ def get_s3_status():
         # merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
         merged_df = pd.merge(merged_df, processed_files_df, on='Key', how='left')
         # add download link if Status is Completed
-        print(f"merged_df: {merged_df['file_path']}")
         merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url(processed_bucket, x['file_path']) if (x['ProcessingJobStatus'] == 'Completed' and type(x['file_path']) is str) else None, axis=1)
 
         # Rename columns and filter necessary fields

@@ -2,8 +2,6 @@ import streamlit as st
 from lib import get_s3_status
 def show_table_with_links(df):
     # Convert DataFrame to HTML, replacing text URL with an HTML link
-    print("printing download link")
-    print(df['Download Link'])
     df['Download Link'] = df['Download Link'].apply(lambda x: f'<a href="{x}" target="_blank">Download</a>' if x is not None else "")
     st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 

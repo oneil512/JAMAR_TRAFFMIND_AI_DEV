@@ -21,7 +21,7 @@ def start_sagemaker_processing_job(infile,machine_type, environment_variables):
     region = 'us-east-2'
     print(f"Starting sagemaker processing job for {infile}")
     logger.info(f" starting sagemaker processing job for {infile}")
-    VERSION = "1.1.48"
+    VERSION = "1.1.49"
     datetime_str = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     # Initialize the SageMaker client
@@ -108,7 +108,7 @@ def run(infile):
     while machine_types:
         machine_type = machine_types.pop()
         try:
-            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False"})
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False", "CLASSIFIER_YAML_PATH": "classifier/yolo_cls/yolov8-cls-5.yaml"})
             break
         except ClientError as e:
             print(e)
