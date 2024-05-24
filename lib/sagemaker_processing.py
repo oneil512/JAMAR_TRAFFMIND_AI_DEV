@@ -21,7 +21,7 @@ def start_sagemaker_processing_job(infile,machine_type, environment_variables):
     region = 'us-east-2'
     print(f"Starting sagemaker processing job for {infile}")
     logger.info(f" starting sagemaker processing job for {infile}")
-    VERSION = "1.1.14"
+    VERSION = "1.1.48"
     datetime_str = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     # Initialize the SageMaker client
