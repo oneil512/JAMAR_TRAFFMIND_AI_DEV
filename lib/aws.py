@@ -75,7 +75,8 @@ def get_s3_status():
         processed_files_df = pd.DataFrame(processed_files['Contents'])
         processed_files_df['file_path'] = processed_files_df['Key']
 
-        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
+        # this is breaking it
+        #processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
         processed_files_df['extension'] = processed_files_df['Key'].apply(lambda x: x.split('.')[-1])
         # remove extension from Key
         processed_files_df = processed_files_df[processed_files_df['extension'].isin(['mp4', 'h264'])]
