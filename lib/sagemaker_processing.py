@@ -108,7 +108,7 @@ def run(infile):
     while machine_types:
         machine_type = machine_types.pop()
         try:
-            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3"})
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False"})
             break
         except ClientError as e:
             print(e)

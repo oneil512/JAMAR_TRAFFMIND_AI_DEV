@@ -10,6 +10,7 @@ secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 region = 'us-east-2'
 unprocessed_bucket = "traffmind-client-unprocessed-jamar-dev"
+processed_bucket = "traffmind-client-processed-jamar-dev"
 
 def download_file(bucket_name, file_name, path, region=None):
 
@@ -71,12 +72,13 @@ def get_s3_status():
     
     # Check if the processed files exist
     try:
-        processed_files = s3.list_objects_v2(Bucket=unprocessed_bucket)
+        processed_files = s3.list_objects_v2(Bucket=processed_bucket)
         processed_files_df = pd.DataFrame(processed_files['Contents'])
+        print(f"processed_files_df: {processed_files_df}")
         processed_files_df['file_path'] = processed_files_df['Key']
 
         # this is breaking it
-        #processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
+        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
         processed_files_df['extension'] = processed_files_df['Key'].apply(lambda x: x.split('.')[-1])
         # remove extension from Key
         processed_files_df = processed_files_df[processed_files_df['extension'].isin(['mp4', 'h264'])]
@@ -100,7 +102,8 @@ def get_s3_status():
         # merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
         merged_df = pd.merge(merged_df, processed_files_df, on='Key', how='left')
         # add download link if Status is Completed
-        merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url(unprocessed_bucket, x['file_path']) if (x['ProcessingJobStatus'] == 'Completed' and type(x['file_path']) is str) else None, axis=1)
+        print(f"merged_df: {merged_df['file_path']}")
+        merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url(processed_bucket, x['file_path']) if (x['ProcessingJobStatus'] == 'Completed' and type(x['file_path']) is str) else None, axis=1)
 
         # Rename columns and filter necessary fields
         merged_df = merged_df.rename(columns={'Key': 'File Name', 'CreationTime': 'Start Time', 'ProcessingEndTime': 'End Time', 'ProcessingJobStatus': 'Status'})
