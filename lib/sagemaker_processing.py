@@ -31,8 +31,7 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     out_bucket = "traffmind-client-processed-jamar-dev"
 
     # Specify the S3 bucket and file paths
-    bucket = "traffmind-jobs"
-    out_bucket = "traffmind-jobs-output"
+   
     # This maps model class ids to client facing class names
     # Eg model assigns 0 to motorcycle, but motorcycle is class 1 in 13 bin classification scheme
     class_mapping_path = "s3://traffmind-classifiers/yolov8n-cls-best-20240611-132930/class_mapping.json"
