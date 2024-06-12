@@ -21,7 +21,7 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     
     region = 'us-east-2'
     logger.info(f" starting sagemaker processing job for {infile}")
-    VERSION = "1.2.13"
+    VERSION = "1.2.17"
 
     # Initialize the SageMaker client
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
