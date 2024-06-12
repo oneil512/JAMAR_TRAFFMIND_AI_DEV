@@ -155,7 +155,7 @@ def run(infile):
     while machine_types:
         machine_type = machine_types.pop()
         try:
-            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False", "CLASSIFIER_YAML_PATH": "classifier/yolo_cls/yolov8-cls-6.yaml", "IMAGE_CLASSIFIER_PATH": "classifier/yolo_cls/yolov8n-cls-best-20240611-132930/model.pt"})
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False", "CLASSIFIER_YAML_PATH": "classifier/yolo_cls/yolov8-cls-6.yaml", "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt"})
             break
         except ClientError as e:
             print(e)
