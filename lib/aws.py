@@ -187,3 +187,31 @@ def generate_presigned_url(bucket_name, object_name, expiration=3600):
         return None
 
     return response
+
+
+def convert_lines_to_vectors(lines_json):
+    vectors = []
+    for line in lines_json:
+        center_x = line['left']
+        center_y = line['top']
+
+        x1 = line['x1']
+        y1 = line['y1']
+        x2 = line['x2']
+        y2 = line['y2']
+
+        # transform into proper coordinates
+        x1 = x1 + center_x
+        y1 = y1 + center_y
+
+        x2 = x2 + center_x
+        y2 = y2 + center_y
+
+        vectors.append((x1, y1, x2, y2))
+
+    return vectors
+
+def write_vectors_to_s3(vectors, bucket, key):
+    print(f"Writing vectors to S3: {bucket}/{key}")
+    s3_client = boto3.client('s3')
+    s3_client.put_object(Body=str(vectors), Bucket=bucket, Key=key)
