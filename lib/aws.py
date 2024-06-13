@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from pytz import timezone
 import hashlib
+import cv2
 
 # read keys in from environment variables
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -12,6 +13,28 @@ region = 'us-east-2'
 unprocessed_bucket = "traffmind-client-unprocessed-jamar-dev"
 processed_bucket = "traffmind-client-processed-jamar-dev"
 
+
+def extract_first_frame(bucket, key):
+    s3_client = boto3.client('s3')
+    
+    # Generate a pre-signed URL to access the video
+    url = s3_client.generate_presigned_url('get_object', 
+                                           Params={'Bucket': bucket, 'Key': key}, 
+                                           ExpiresIn=7600)
+    
+    # Use OpenCV to capture the first frame
+    cap = cv2.VideoCapture(url)
+    ret, frame = cap.read()
+    cap.release()
+
+    # convert to RGB
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    if ret:
+        return frame
+    else:
+        print(f'Failed to capture video from {url}')
+
 def download_file(bucket_name, file_name, path, region=None):
 
     if region is None:
@@ -20,6 +43,26 @@ def download_file(bucket_name, file_name, path, region=None):
     s3_client = boto3.client("s3", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     print(f"Downloading. bucket: {bucket_name}, file: {file_name}, path: {path}")
     s3_client.download_file(bucket_name, path, file_name)
+
+def list_files_paginated(bucket_name, prefix, file_type='*'):
+
+    s3_client = boto3.client('s3')
+    paginator = s3_client.get_paginator('list_objects_v2')
+
+    names = []
+    
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        for obj in page.get('Contents', []):
+            key = obj['Key']
+            if type(file_type) is list:
+                for ft in file_type:
+                    if key.endswith(ft):
+                        names.append(key)
+            elif file_type == '*' or key.endswith(file_type):
+                # get presigned url
+                names.append(key)
+
+    return names
 
 def list_files(bucket_name, prefix, file_type='*'):
     
