@@ -9,4 +9,4 @@ torchvision
 ultralytics
 supervision
 openai
-streamlit-drawable-canvas
+streamlit-drawable-canvas==0.8.0
