@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_drawable_canvas import st_canvas
 from PIL import Image
 import logging
 import boto3
@@ -73,8 +74,28 @@ if video_name:
             bg_image = get_image_from_frame(frame)
             st.session_state['bg_image'] = bg_image
             st.session_state['selected_video_name'] = video_name
+            st.session_state['canvas_result'] = None  # Clear canvas
 
 if 'bg_image' in st.session_state:
-    st.image(st.session_state['bg_image'], caption=f"First frame of {st.session_state['selected_video_name']}")
+    bg_image = st.session_state['bg_image']
+    width, height = bg_image.size
 else:
-    st.write("No image to display.")
+    width, height = 800, 800
+
+logger.warning(f"about to draw canvas")
+logger.warning(f"bg_image value: {bg_image}")
+logger.warning(f"bg_image session state value: {st.session_state.get('bg_image', None)}")
+
+canvas_result = st_canvas(
+    fill_color="rgba(255, 165, 0, 0.3)",
+    stroke_width=2,
+    stroke_color='Black',
+    background_color="#000000",
+    background_image=st.session_state.get('bg_image'),
+    update_streamlit=True,
+    width=width,
+    height=height,
+    drawing_mode="freedraw",
+    display_toolbar=True,
+    key=st.session_state['selected_video_name'] + 'canvas' if st.session_state.get('selected_video_name', False) else "canvas"
+)
