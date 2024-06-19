@@ -9,5 +9,4 @@ torchvision
 ultralytics
 supervision
 openai
-streamlit-drawable-canvas==0.9.3
-streamlit==1.23.1
+plotly
