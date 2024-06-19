@@ -13,6 +13,20 @@ from botocore.exceptions import ClientError
 from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
 from lib.sagemaker_processing import run
 
+def plotly_draw_vectors(image):
+    fig = go.Figure()
+    fig.add_trace(go.Image(z=image))
+    
+    fig.update_layout(
+        dragmode="drawline",
+        newshape=dict(line_color="red"),
+        width=image.shape[1],
+        height=image.shape[0],
+        margin=dict(l=0, r=0, t=0, b=0),
+    )
+    
+    return fig
+    
 st.set_page_config(page_title="TraffMind AI Traffic Counter", layout="wide")
 
 st.header("TraffMind AI Draw Vectors")
