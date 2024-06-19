@@ -10,6 +10,8 @@ import time
 import datetime
 import plotly.graph_objects as go
 from botocore.exceptions import ClientError
+from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
+from lib.sagemaker_processing import run
 
 st.set_page_config(page_title="TraffMind AI Traffic Counter", layout="wide")
 
