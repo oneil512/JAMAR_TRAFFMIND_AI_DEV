@@ -26,7 +26,7 @@ canvas_result = st_canvas(
 )
 
 # Add a button to update Streamlit and print drawn vectors
-if st.button("Update and Print Drawn Vectors"):
+if st.button("Next"):
     if canvas_result.json_data is not None:
         objects = pd.json_normalize(canvas_result.json_data["objects"])
         for col in objects.select_dtypes(include=["object"]).columns:
