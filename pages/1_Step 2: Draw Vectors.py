@@ -9,7 +9,7 @@ import hashlib
 
 def get_background_image_url(img: Image, key: str):
     """Convert the image to URL and handle server base URL path if needed."""
-    image_url = st.image_to_url(
+    image_url = image_to_url(
         img, width=None, clamp=True, channels="RGB", output_format="PNG",
         image_id=f"drawable-canvas-bg-{hashlib.md5(img.tobytes()).hexdigest()}-{key}"
     )
