@@ -34,8 +34,9 @@ st.header("Insight AI Job Submission")
 st.markdown("""
 Welcome to the Insight AI Job Submission page. Follow the steps below to submit your video processing job:
 
-1. **Select a Video**:
-    - Choose a video from the dropdown menu below to draw vectors on it.
+1. **Select a Video and Draw Vectors**:
+    - Choose a video from the dropdown menu below.
+    - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
 """)
 
 bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select')
@@ -55,11 +56,6 @@ if 'bg_image' in st.session_state:
     bg_image_bytes = base64.b64decode(st.session_state['bg_image'])
     bg_image = Image.open(BytesIO(bg_image_bytes))
 
-    st.markdown("""
-2. **Draw Vectors**:
-    - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
-    """)
-
     # Create a canvas component with fixed settings
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
@@ -75,7 +71,7 @@ if 'bg_image' in st.session_state:
     )
 
     st.markdown("""
-3. **Label Vectors**:
+2. **Label Vectors**:
     - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
     """)
 
@@ -106,7 +102,7 @@ if 'bg_image' in st.session_state:
                             handle_click(option, i)
 
     st.markdown("""
-4. **Submit Job**:
+3. **Submit Job**:
     - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
     """)
 
