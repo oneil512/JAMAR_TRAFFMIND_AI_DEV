@@ -46,8 +46,8 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            st.session_state.image_height = min(max(image_height, 400), 600)
-            st.session_state.image_width = min(max(image_width, 600), 800)
+            st.session_state.image_height = min(max(image_height, 150), 150)
+            st.session_state.image_width = min(max(image_width, 200), 200)
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
