@@ -1,26 +1,14 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+import requests
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
-import requests
 
-# Function to load the background image from URL
-def load_image_from_url(url):
-    response = requests.get(url)
-    return Image.open(BytesIO(response.content))
-
-# Sidebar file uploader for the background image
-st.sidebar.write("Upload a background image or use the default image:")
-uploaded_image = st.sidebar.file_uploader("Background image", type=["png", "jpg", "jpeg"])
-
-# Load the background image
-if uploaded_image is not None:
-    bg_image = Image.open(uploaded_image)
-else:
-    # Default background image URL
-    background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
-    bg_image = load_image_from_url(background_image_url)
+# Load background image from URL
+background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
+response = requests.get(background_image_url)
+bg_image = Image.open(BytesIO(response.content))
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
