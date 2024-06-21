@@ -99,8 +99,9 @@ with col1:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
-        font = ImageFont.load_default()  # Use default larger font
-
+        font_path = os.path.join(cv2.__path__[0],'qt','fonts','DejaVuSans.ttf')
+        font = ImageFont.truetype(font_path, size=18)
+        
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
