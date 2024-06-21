@@ -113,3 +113,4 @@ if 'bg_image' in st.session_state:
             st.success("Job submitted successfully!")
         else:
             st.error("Please draw vectors and specify directions before submitting the job.")
+            
