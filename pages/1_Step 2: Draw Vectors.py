@@ -4,25 +4,28 @@ from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 import requests
+import hashlib
 
-# Function to handle the URL modification
-def get_modified_background_image_url(background_image_url: str):
+def get_background_image_url(img: Image, key: str):
+    """Convert the image to URL and handle server base URL path if needed."""
+    image_url = st.image_to_url(
+        img, width=None, clamp=True, channels="RGB", output_format="PNG",
+        image_id=f"drawable-canvas-bg-{hashlib.md5(img.tobytes()).hexdigest()}-{key}"
+    )
     base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
     if base_url_path:
         base_url_path = "/" + base_url_path
-    return base_url_path + background_image_url
+    return base_url_path + image_url
 
-# Background image URL
+# Load background image from URL
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
-
-# Load background image
 response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
 
-# Modify the background image URL if necessary
-modified_image_url = get_modified_background_image_url(background_image_url)
+# Convert the background image to URL
+background_image_url = get_background_image_url(bg_image, key="full_app")
 
-# Create a canvas component
+# Create a canvas component with fixed settings
 canvas_result = st_canvas(
     fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
     stroke_width=3,  # Fixed stroke width
