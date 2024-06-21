@@ -5,6 +5,7 @@ from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 import requests
 
+
 def get_background_image_url(url):
     base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
     if base_url_path:
