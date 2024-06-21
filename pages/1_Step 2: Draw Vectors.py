@@ -17,7 +17,7 @@ canvas_result = st_canvas(
     stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
     background_color="#eee",  # Fixed background color
     background_image=bg_image,
-    update_streamlit=True,  # Always update in real time
+    update_streamlit=False,  # No real-time updates
     height=400,
     width=600,
     drawing_mode="line",  # Always in line drawing mode
@@ -25,16 +25,20 @@ canvas_result = st_canvas(
     key="full_app",
 )
 
-# Process and display canvas data
-if canvas_result.json_data is not None:
-    objects = pd.json_normalize(canvas_result.json_data["objects"])
-    for col in objects.select_dtypes(include=["object"]).columns:
-        objects[col] = objects[col].astype("str")
+# Create Update and Reset buttons
+if st.button("Update"):
+    if canvas_result.json_data is not None:
+        objects = pd.json_normalize(canvas_result.json_data["objects"])
+        for col in objects.select_dtypes(include=["object"]).columns:
+            objects[col] = objects[col].astype("str")
 
-    if not objects.empty:
-        st.subheader("List of line drawings")
-        for _, row in objects.iterrows():
-            st.markdown(
-                f'Start coords: ({row["x1"]:.2f}, {row["y1"]:.2f}), End coords: ({row["x2"]:.2f}, {row["y2"]:.2f})'
-            )
-    st.dataframe(objects)
+        if not objects.empty:
+            st.subheader("List of line drawings")
+            for _, row in objects.iterrows():
+                st.markdown(
+                    f'Start coords: ({row["x1"]:.2f}, {row["y1"]:.2f}), End coords: ({row["x2"]:.2f}, {row["y2"]:.2f})'
+                )
+        st.dataframe(objects)
+
+if st.button("Reset"):
+    st.experimental_rerun()
