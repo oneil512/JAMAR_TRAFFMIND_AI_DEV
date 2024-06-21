@@ -25,16 +25,17 @@ canvas_result = st_canvas(
     key="full_app",
 )
 
-# Process and display canvas data
-if canvas_result.json_data is not None:
-    objects = pd.json_normalize(canvas_result.json_data["objects"])
-    for col in objects.select_dtypes(include=["object"]).columns:
-        objects[col] = objects[col].astype("str")
+# Add a button to update Streamlit and print drawn vectors
+if st.button("Update and Print Drawn Vectors"):
+    if canvas_result.json_data is not None:
+        objects = pd.json_normalize(canvas_result.json_data["objects"])
+        for col in objects.select_dtypes(include=["object"]).columns:
+            objects[col] = objects[col].astype("str")
 
-    if not objects.empty:
-        st.subheader("List of line drawings")
-        for _, row in objects.iterrows():
-            st.markdown(
-                f'Start coords: ({row["x1"]:.2f}, {row["y1"]:.2f}), End coords: ({row["x2"]:.2f}, {row["y2"]:.2f})'
-            )
-    st.dataframe(objects)
+        if not objects.empty:
+            st.subheader("Updated List of Line Drawings")
+            for _, row in objects.iterrows():
+                st.markdown(
+                    f'Start coords: ({row["x1"]:.2f}, {row["y1"]:.2f}), End coords: ({row["x2"]:.2f}, {row["y2"]:.2f})'
+                )
+            st.dataframe(objects)
