@@ -10,14 +10,15 @@ logger = logging.getLogger(__name__)
 st.set_page_config(layout="wide")
 
 # AWS S3 configuration
-AWS_ACCESS_KEY = 'your_access_key'
-AWS_SECRET_KEY = 'your_secret_key'
-S3_BUCKET = 'your_bucket_name'
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+S3_BUCKET = 'jamar'
+UPLOAD_FOLDER = 'client_upload/'
 
 # Function to upload file to S3
-def upload_to_s3(file, bucket, object_name=None):
+def upload_to_s3(file, bucket, folder, object_name=None):
     if object_name is None:
-        object_name = file.name
+        object_name = folder + file.name
 
     s3_client = boto3.client(
         's3',
@@ -52,7 +53,7 @@ if uploaded_file is not None:
     if uploaded_file.size > 25 * 1024 * 1024 * 1024:
         st.error("File size exceeds 25 GB limit.")
     else:
-        if upload_to_s3(uploaded_file, S3_BUCKET):
+        if upload_to_s3(uploaded_file, S3_BUCKET, UPLOAD_FOLDER):
             st.success(f"File {uploaded_file.name} uploaded successfully!")
         else:
             st.error("Failed to upload file to S3. Please check your AWS credentials.")
