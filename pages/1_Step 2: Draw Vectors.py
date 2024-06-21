@@ -3,34 +3,33 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
-from streamlit.elements.image import image_to_url
-
 import requests
 import hashlib
 
-def construct_image_url(base_url_path, image_url):
-    # Ensure base URL path does not end with a slash
-    base_url_path = base_url_path.rstrip('/')
-    # Ensure image URL starts with a slash
-    if not image_url.startswith('/'):
-        image_url = '/' + image_url
+def get_background_image_url(img_path: str, key: str):
+    """Convert the image to URL and handle server base URL path if needed."""
+    img = Image.open(img_path)
+    image_url = st.image_to_url(
+        img, width=None, clamp=True, channels="RGB", output_format="PNG",
+        image_id=f"drawable-canvas-bg-{hashlib.md5(img.tobytes()).hexdigest()}-{key}"
+    )
+    base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
+    if base_url_path:
+        base_url_path = "/" + base_url_path
     return base_url_path + image_url
 
-# Load background image from URL
+# Download the image locally
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
 response = requests.get(background_image_url)
-bg_image = Image.open(BytesIO(response.content))
+bg_image_path = "background_image.jpg"
+with open(bg_image_path, "wb") as f:
+    f.write(response.content)
 
 # Convert the background image to URL
-image_url = image_to_url(
-    bg_image, width=None, clamp=True, channels="RGB", output_format="PNG",
-    image_id=f"drawable-canvas-bg-{hashlib.md5(bg_image.tobytes()).hexdigest()}-full_app"
-)
+background_image_url = get_background_image_url(bg_image_path, key="full_app")
 
-# Get base URL path from Streamlit configuration
-base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
-# Construct the full image URL
-full_image_url = construct_image_url(base_url_path, image_url)
+# Load the image without slashes
+bg_image = Image.open(bg_image_path)
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
