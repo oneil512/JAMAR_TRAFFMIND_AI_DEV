@@ -1,11 +1,35 @@
 import streamlit as st
 import logging
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
 # Set Streamlit page configuration
 st.set_page_config(layout="wide")
+
+# AWS S3 configuration
+AWS_ACCESS_KEY = 'your_access_key'
+AWS_SECRET_KEY = 'your_secret_key'
+S3_BUCKET = 'your_bucket_name'
+
+# Function to upload file to S3
+def upload_to_s3(file, bucket, object_name=None):
+    if object_name is None:
+        object_name = file.name
+
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=AWS_ACCESS_KEY,
+        aws_secret_access_key=AWS_SECRET_KEY
+    )
+
+    try:
+        s3_client.upload_fileobj(file, bucket, object_name)
+        return True
+    except NoCredentialsError:
+        return False
 
 # Header
 st.header("Insight AI Direct Video Upload")
@@ -15,19 +39,23 @@ You can now directly upload your videos through this page. Follow the steps belo
 
 1. **Select Video File**:
     - Click on the "Browse files" button below to select the video file from your local device.
-    - Make sure the video file format is supported (e.g., MP4, AVI, MOV).
+    - Supported formats: MP4, H264.
+    - Maximum file size: 25 GB.
 
 2. **Upload Video**:
     - After selecting the video file, it will automatically start uploading.
 """)
 
-uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "avi", "mov"])
+uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "h264"], accept_multiple_files=False)
 
 if uploaded_file is not None:
-    # Save the uploaded file
-    with open(f"./uploaded_videos/{uploaded_file.name}", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.success(f"File {uploaded_file.name} uploaded successfully!")
+    if uploaded_file.size > 25 * 1024 * 1024 * 1024:
+        st.error("File size exceeds 25 GB limit.")
+    else:
+        if upload_to_s3(uploaded_file, S3_BUCKET):
+            st.success(f"File {uploaded_file.name} uploaded successfully!")
+        else:
+            st.error("Failed to upload file to S3. Please check your AWS credentials.")
 
 # Link to check status
 st.markdown("""
