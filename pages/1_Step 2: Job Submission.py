@@ -21,7 +21,7 @@ if 'names_to_vectors' not in st.session_state:
     st.session_state['names_to_vectors'] = defaultdict(list)
 
 # Dropdown for selecting a background image
-bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'])
+bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select')
 
 @st.cache_data
 def get_first_frame(video_name):
@@ -56,14 +56,14 @@ Welcome to the Insight AI Job Submission page. Follow the steps below to submit 
     - Choose a video from the dropdown menu below to draw vectors on it.
 """)
 
-bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'])
+bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select_2')
 
 if 'bg_image' in st.session_state:
     st.markdown("""
 2. **Draw Vectors**:
     - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
     """)
-    
+
     # Create a canvas component with fixed settings
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
@@ -74,8 +74,8 @@ if 'bg_image' in st.session_state:
         height=st.session_state.image_height,
         width=st.session_state.image_width,
         drawing_mode="line",  # Always in line drawing mode
-        display_toolbar=False,
-        key="full_app",
+        display_toolbar=True,
+        key="canvas",
     )
 
     st.markdown("""
