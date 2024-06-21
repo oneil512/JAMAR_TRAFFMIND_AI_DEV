@@ -5,34 +5,33 @@ from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 import requests
 
-def get_background_image(image_url):
-    response = requests.get(image_url)
-    return Image.open(BytesIO(response.content))
+def get_background_image_url(url):
+    base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
+    if base_url_path:
+        base_url_path = "/" + base_url_path
+    return base_url_path + url
 
-def resize_image(image, width, height):
-    return image.resize((width, height))
-
-# Load and resize background image
+# URL of the background image
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
-bg_image = get_background_image(background_image_url)
-bg_image = resize_image(bg_image, 600, 400)
 
-# Save the resized image temporarily
-buffer = BytesIO()
-bg_image.save(buffer, format="PNG")
-buffer.seek(0)
+# Modify the URL if necessary
+modified_image_url = get_background_image_url(background_image_url)
 
-# Use the resized image in the canvas
+# Load background image from the modified URL
+response = requests.get(modified_image_url)
+bg_image = Image.open(BytesIO(response.content))
+
+# Create a canvas component
 canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
-    stroke_width=3,  # Fixed stroke width
-    stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
-    background_color="#eee",  # Fixed background color
-    background_image=Image.open(buffer),
-    update_streamlit=True,  # Always update in real time
+    fill_color="rgba(255, 165, 0, 0.3)",
+    stroke_width=3,
+    stroke_color="rgba(0, 0, 255, 1)",
+    background_color="#eee",
+    background_image=bg_image,
+    update_streamlit=True,
     height=400,
     width=600,
-    drawing_mode="line",  # Always in line drawing mode
+    drawing_mode="line",
     display_toolbar=False,
     key="full_app",
 )
