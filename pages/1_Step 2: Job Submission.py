@@ -108,7 +108,7 @@ with col2:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("arial.ttf", 16)
+        font = ImageFont.load_default()  # Use default font
 
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
@@ -131,4 +131,3 @@ if st.button("Submit Job"):
         st.success("Job submitted successfully!")
     else:
         st.error("Please draw vectors and specify directions before submitting the job.")
-
