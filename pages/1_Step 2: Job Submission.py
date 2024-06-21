@@ -85,7 +85,8 @@ if 'bg_image' in st.session_state:
             if not objects.empty:
                 vectors = []
                 for _, row in objects.iterrows():
-                    vectors.append((row["left"], row["top"], row["left"] + row["width"], row["top"] + row["height"]))
+                    if row["type"] == "line":
+                        vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
 
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
@@ -100,14 +101,14 @@ with col1:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
-        font_path = os.path.join(cv2.__path__[0],'qt','fonts','DejaVuSans.ttf')
+        font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
         font = ImageFont.truetype(font_path, size=30)
-        
+
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
             text_x = (x1 + x2) / 2
-            text_y = min(y1, y2) - 15  # Position the text above the center of the line
+            text_y = (y1 + y2) / 2 - 20  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
         st.image(img, caption="Review your vectors and labels", width=st.session_state.image_width)
