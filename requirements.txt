@@ -2,4 +2,4 @@ streamlit
 opencv-python-headless
 boto3
 pandas
-streamlit-draw-lines
+streamlit-drawable-canvas==0.9.3
