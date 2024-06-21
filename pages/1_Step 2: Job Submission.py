@@ -20,9 +20,6 @@ if 'vector_names' not in st.session_state:
 if 'names_to_vectors' not in st.session_state:
     st.session_state['names_to_vectors'] = defaultdict(list)
 
-# Dropdown for selecting a background image
-bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select')
-
 @st.cache_data
 def get_first_frame(video_name):
     return extract_first_frame("jamar", f"client_upload/{video_name}")
@@ -30,6 +27,18 @@ def get_first_frame(video_name):
 def base64_encode_image(frame):
     _, encoded_frame = cv2.imencode('.png', frame)
     return base64.b64encode(encoded_frame).decode('utf-8')
+
+# Header
+st.header("Insight AI Job Submission")
+
+st.markdown("""
+Welcome to the Insight AI Job Submission page. Follow the steps below to submit your video processing job:
+
+1. **Select a Video**:
+    - Choose a video from the dropdown menu below to draw vectors on it.
+""")
+
+bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select')
 
 if bg_video_name:
     if 'bg_video_name' not in st.session_state or st.session_state['bg_video_name'] != bg_video_name:
@@ -46,19 +55,6 @@ if 'bg_image' in st.session_state:
     bg_image_bytes = base64.b64decode(st.session_state['bg_image'])
     bg_image = Image.open(BytesIO(bg_image_bytes))
 
-# Header
-st.header("Insight AI Job Submission")
-
-st.markdown("""
-Welcome to the Insight AI Job Submission page. Follow the steps below to submit your video processing job:
-
-1. **Select a Video**:
-    - Choose a video from the dropdown menu below to draw vectors on it.
-""")
-
-bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'], key='video_select_2')
-
-if 'bg_image' in st.session_state:
     st.markdown("""
 2. **Draw Vectors**:
     - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
@@ -74,7 +70,7 @@ if 'bg_image' in st.session_state:
         height=st.session_state.image_height,
         width=st.session_state.image_width,
         drawing_mode="line",  # Always in line drawing mode
-        display_toolbar=True,
+        display_toolbar=False,
         key="canvas",
     )
 
@@ -103,7 +99,7 @@ if 'bg_image' in st.session_state:
                     with col1:
                         st.write(f":blue[Vector {i + 1}]")
                     with col2:
-                        directions_list = ["N", "E", "S", "W"]
+                        directions_list = ["N", "E", S", "W"]
                         option = None
                         option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                         if option:
