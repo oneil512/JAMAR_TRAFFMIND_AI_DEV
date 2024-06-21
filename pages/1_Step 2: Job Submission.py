@@ -89,7 +89,10 @@ if 'bg_image' in st.session_state:
                 vectors = []
                 for _, row in objects.iterrows():
                     if row["type"] == "line":
-                        vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
+                        left, top, width, height = row["left"], row["top"], row["width"], row["height"]
+                        x1, y1 = left, top
+                        x2, y2 = left + width, top + height
+                        vectors.append((x1, y1, x2, y2))
 
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
@@ -115,7 +118,7 @@ with col1:
             text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        st.image(img, caption="Review your vectors and labels", width=canvas_width)
+        st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
 with col2:
     if 'vectors' in st.session_state:
