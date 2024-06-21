@@ -7,6 +7,7 @@ from lib.aws import list_files_paginated, extract_first_frame
 import base64
 import cv2
 from collections import defaultdict
+import os
 
 # Function to handle button clicks
 def handle_click(direction, index):
