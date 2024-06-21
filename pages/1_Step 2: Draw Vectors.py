@@ -5,10 +5,20 @@ import requests
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 
+# Define function to get the correct background image URL
+def get_correct_url(path):
+    base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
+    if base_url_path:
+        base_url_path = "/" + base_url_path
+    return base_url_path + path
+
 # Load background image from URL
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
 response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
+
+# Get the correct URL
+corrected_image_url = get_correct_url(background_image_url)
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
