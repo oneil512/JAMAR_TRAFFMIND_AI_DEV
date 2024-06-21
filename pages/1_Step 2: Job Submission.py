@@ -70,6 +70,11 @@ if 'bg_image' in st.session_state:
         key="canvas",
     )
 
+    # Draw vector numbers
+    if st.session_state.get('vectors'):
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+            canvas_result.add_text(f"Vector {i+1}", x1, y1)
+
     st.markdown("""
 2. **Label Vectors**:
     - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
@@ -113,4 +118,3 @@ if 'bg_image' in st.session_state:
             st.success("Job submitted successfully!")
         else:
             st.error("Please draw vectors and specify directions before submitting the job.")
-            
