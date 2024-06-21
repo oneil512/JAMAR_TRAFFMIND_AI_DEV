@@ -8,11 +8,9 @@ logger = logging.getLogger(__name__)
 st.set_page_config(layout="wide")
 
 # Header
-st.header("TraffMind AI Video Upload Using SFTP")
-
+st.header("Insight AI Video Upload Using SFTP")
 
 st.markdown("""
-
 You can now upload your videos using an SFTP client such as Cyberduck. Follow the steps below:
 
 1. **Download Cyberduck**:
@@ -27,7 +25,7 @@ You can now upload your videos using an SFTP client such as Cyberduck. Follow th
     - Username: `sftp-access-s3`
     - Password: Leave this blank.
     - SSH Private Key: Use the private key we provided to you.
-    """)
+""")
 
 st.image("https://raw.githubusercontent.com/edwardayoub/JAMAR_TRAFFMIND_AI/main/screenshots/traffmind_sftp_login.png", width=600)
 
@@ -43,8 +41,4 @@ st.markdown("""
 **4. Draw Vectors**: Before submitting the job, you can draw vectors on the video to track vehicles.
 """)
 
-st.page_link(
-    "pages/1_Step 2: Draw Vectors.py",
-    label=":blue[Step 2: Draw Vectors]",
-    disabled=False
-)
+st.markdown('[Step 2: Draw Vectors](pages/1_Step 2: Draw Vectors.py)')
