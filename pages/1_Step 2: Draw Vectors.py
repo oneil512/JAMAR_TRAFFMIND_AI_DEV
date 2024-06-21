@@ -3,6 +3,7 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
+from streamlit.elements.image import image_to_url
 import requests
 import hashlib
 
