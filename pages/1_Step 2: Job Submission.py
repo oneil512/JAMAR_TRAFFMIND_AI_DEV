@@ -47,8 +47,10 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            st.session_state.image_height = min(max(image_height, 300), 300)
-            st.session_state.image_width = min(max(image_width, 400), 400)
+            fixed_height = 400
+            aspect_ratio = image_width / image_height
+            st.session_state.image_height = fixed_height
+            st.session_state.image_width = int(fixed_height * aspect_ratio)
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
@@ -101,14 +103,12 @@ if 'bg_image' in st.session_state:
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
 
-                st.markdown("""
+    st.markdown("""
 3. **Review Labeling**:
     - Review the vectors and their labels in the image preview below.
     """)
 
-col1, col2 = st.columns([3, 1])
-with col1:
-    if 'vectors' in st.session_state and st.session_state['vectors']:
+    if 'vectors' in st.session_state:
         img = Image.open(BytesIO(bg_image_bytes))
         img = img.resize((canvas_width, canvas_height))  # Resize to match canvas
         draw = ImageDraw.Draw(img)
