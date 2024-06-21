@@ -60,11 +60,11 @@ if 'bg_image' in st.session_state:
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
         stroke_width=3,  # Fixed stroke width
-        stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
+        stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
-        height=st.session_state.image_height,
-        width=st.session_state.image_width,
+        height=min(max(st.session_state.image_height, 400), 600),
+        width=min(max(st.session_state.image_width, 600), 800),
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="canvas",
@@ -108,16 +108,16 @@ with col2:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
-        font = ImageFont.load_default()  # Use default font
+        font = ImageFont.truetype("arial.ttf", 24)  # Larger font size
 
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
-            draw.line((x1, y1, x2, y2), fill=(0, 0, 0), width=3)
+            draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
             text_x = (x1 + x2) / 2
-            text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
-            draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)
+            text_y = (y1 + y2) / 2 - 20  # Position the text above the center of the line
+            draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        st.image(img, caption="Review your vectors and labels")
+        st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
 st.markdown("""
 4. **Submit Job**:
