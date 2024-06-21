@@ -64,8 +64,8 @@ Welcome to the Insight AI Job Submission page. Follow the steps below to submit 
 2. **Draw Vectors**:
     - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
 
-3. **Submit Directions**:
-    - After drawing vectors, specify the directions for each vector.
+3. **Label Vectors**:
+    - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
 
 4. **Submit Job**:
     - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
@@ -87,7 +87,11 @@ if 'bg_image' in st.session_state:
     )
 
     # Add a button to update Streamlit and show labeling options
-    if st.button("Next"):
+    if st.button("Label Vectors"):
+        st.markdown("""
+        **Label Vectors**:
+        - After drawing vectors, specify the directions for each vector.
+        """)
         if canvas_result.json_data is not None:
             objects = pd.json_normalize(canvas_result.json_data["objects"])
             for col in objects.select_dtypes(include=["object"]).columns:
