@@ -11,4 +11,4 @@ supervision
 openai
 plotly
 streamlit>=0.88
-git+https://github.com/edwardayoub/streamlit-drawable-canvas
+streamlit-drawable-canvas>=0.8
