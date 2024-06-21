@@ -3,6 +3,7 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
+import requests
 
 # Function to handle the URL modification
 def get_modified_background_image_url(background_image_url: str):
