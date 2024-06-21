@@ -1,14 +1,5 @@
+streamlit
+opencv-python-headless
 boto3
 pandas
-tensorflow
-Pillow
-numpy
-opencv-contrib-python-headless
-torch
-torchvision
-ultralytics
-supervision
-openai
-plotly
-streamlit
-streamlit-drawable-canvas==0.8.0
+streamlit-draw-lines==0.9.3
