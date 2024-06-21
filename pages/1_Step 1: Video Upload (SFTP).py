@@ -38,7 +38,7 @@ st.image("https://raw.githubusercontent.com/edwardayoub/JAMAR_TRAFFMIND_AI/main/
 
 # Link to check status
 st.markdown("""
-**4. Draw Vectors**: Before submitting the job, you can draw vectors on the video to track vehicles.
+**4. Job Submission**: Once the video is uploaded, submit the job for processing.
 """)
 
-st.markdown('[Step 2: Draw Vectors](pages/1_Step 2: Draw Vectors.py)')
+st.markdown('[Step 2: Job Submission](pages/1_Step 2: Job Submission.py)')
