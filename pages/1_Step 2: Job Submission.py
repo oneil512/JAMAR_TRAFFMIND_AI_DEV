@@ -94,8 +94,23 @@ if 'bg_image' in st.session_state:
     - Review the vectors and their labels in the image preview below.
     """)
 
-col1, col2 = st.columns([1, 3])
+col1, col2 = st.columns([3, 1])
 with col1:
+    if 'vectors' in st.session_state and st.session_state['vectors']:
+        img = Image.open(BytesIO(bg_image_bytes))
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()  # Use default larger font
+
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+            direction = st.session_state.get(f"button_{i}", "")
+            draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
+            text_x = (x1 + x2) / 2
+            text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
+            draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
+
+        st.image(img, caption="Review your vectors and labels", use_column_width=True)
+
+with col2:
     if 'vectors' in st.session_state:
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             st.write(f":blue[Vector {i + 1}]")
@@ -103,21 +118,6 @@ with col1:
             option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
             if option:
                 handle_click(option, i)
-
-with col2:
-    if 'vectors' in st.session_state and st.session_state['vectors']:
-        img = Image.open(BytesIO(bg_image_bytes))
-        draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("arial.ttf", 24)  # Larger font size
-
-        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-            direction = st.session_state.get(f"button_{i}", "")
-            draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
-            text_x = (x1 + x2) / 2
-            text_y = (y1 + y2) / 2 - 20  # Position the text above the center of the line
-            draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
-
-        st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
 st.markdown("""
 4. **Submit Job**:
