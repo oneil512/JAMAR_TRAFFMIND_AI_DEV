@@ -7,7 +7,6 @@ from streamlit_drawable_canvas import st_canvas
 from lib.aws import list_files_paginated, extract_first_frame
 import base64
 import cv2
-import draw_lines
 from collections import defaultdict
 
 # Function to handle button clicks
@@ -38,8 +37,6 @@ def get_first_frame(video_name):
 def base64_encode_image(frame):
     _, encoded_frame = cv2.imencode('.png', frame)
     return base64.b64encode(encoded_frame).decode('utf-8')
-
-lines = []
 
 if bg_video_name:
     if 'bg_video_name' not in st.session_state or st.session_state['bg_video_name'] != bg_video_name:
