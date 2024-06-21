@@ -101,7 +101,7 @@ with col1:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
         font_path = os.path.join(cv2.__path__[0],'qt','fonts','DejaVuSans.ttf')
-        font = ImageFont.truetype(font_path, size=18)
+        font = ImageFont.truetype(font_path, size=30)
         
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
