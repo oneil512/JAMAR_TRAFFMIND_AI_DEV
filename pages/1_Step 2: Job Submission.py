@@ -85,38 +85,36 @@ if 'bg_image' in st.session_state:
             if not objects.empty:
                 vectors = []
                 for _, row in objects.iterrows():
-                    vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
+                    vectors.append((row["left"], row["top"], row["left"] + row["width"], row["top"] + row["height"]))
 
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
+
+                st.markdown("""
+3. **Review Labeling**:
+    - Review the vectors and their labels in the image preview below.
+    """)
 
                 col1, col2 = st.columns([1, 3])
                 with col1:
                     for i, (x1, y1, x2, y2) in enumerate(vectors):
                         st.write(f":blue[Vector {i + 1}]")
                         directions_list = ["N", "E", "S", "W"]
+                        option = None
                         option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                         if option:
                             handle_click(option, i)
                 with col2:
-                    st.markdown("""
-                    3. **Review Labeling**:
-                    - Review the vectors and their labels in the image preview below.
-                    """)
+                    if 'vectors' in st.session_state and st.session_state['vectors']:
+                        img = Image.open(BytesIO(bg_image_bytes))
+                        draw = ImageDraw.Draw(img)
 
-                    img = Image.open(BytesIO(bg_image_bytes))
-                    draw = ImageDraw.Draw(img)
+                        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+                            direction = st.session_state.get(f"button_{i}", "")
+                            draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
+                            draw.text((x1, y1), direction, fill=(255, 0, 0))
 
-                    for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                        x1_scaled = x1 * (st.session_state.image_width / canvas_result.image_data['width'])
-                        y1_scaled = y1 * (st.session_state.image_height / canvas_result.image_data['height'])
-                        x2_scaled = x2 * (st.session_state.image_width / canvas_result.image_data['width'])
-                        y2_scaled = y2 * (st.session_state.image_height / canvas_result.image_data['height'])
-                        direction = st.session_state.get(f"button_{i}", "")
-                        draw.line((x1_scaled, y1_scaled, x2_scaled, y2_scaled), fill=(255, 0, 0), width=3)
-                        draw.text((x1_scaled, y1_scaled), direction, fill=(255, 0, 0))
-
-                    st.image(img, caption="Review your vectors and labels")
+                        st.image(img, caption="Review your vectors and labels")
 
     st.markdown("""
 4. **Submit Job**:
