@@ -7,10 +7,10 @@ from streamlit.elements.image import image_to_url
 import requests
 import hashlib
 
-def get_background_image_url(img: Image, key: str):
+def get_background_image_url(img: Image, key: str, width: int):
     """Convert the image to URL and handle server base URL path if needed."""
-    image_url = image_to_url(
-        img, width=None, clamp=True, channels="RGB", output_format="PNG",
+    image_url = st.image_to_url(
+        img, width=width, clamp=True, channels="RGB", output_format="PNG",
         image_id=f"drawable-canvas-bg-{hashlib.md5(img.tobytes()).hexdigest()}-{key}"
     )
     base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
@@ -24,7 +24,7 @@ response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
 
 # Convert the background image to URL
-background_image_url = get_background_image_url(bg_image, key="full_app")
+background_image_url = get_background_image_url(bg_image, key="full_app", width=600)
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
