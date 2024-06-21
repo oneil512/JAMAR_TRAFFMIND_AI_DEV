@@ -13,6 +13,14 @@ import os
 def handle_click(direction, index):
     st.session_state[f"button_{index}"] = direction
 
+# Load and display the CSV file
+file_path = "/mnt/data/2024-06-21T21-16_export.csv"
+df = pd.read_csv(file_path)
+
+# Display the content of the CSV file
+st.write("Contents of the uploaded CSV file:")
+st.dataframe(df)
+
 # Manage initial load and refresh with session state
 if 'vector_names' not in st.session_state:
     names = list_files_paginated("jamar", "client_upload/", file_type='*')
@@ -64,8 +72,8 @@ if 'bg_image' in st.session_state:
         stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
-        height=image_height,
-        width=image_width,
+        height=st.session_state.image_height,
+        width=st.session_state.image_width,
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="canvas",
