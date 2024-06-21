@@ -89,9 +89,13 @@ if 'bg_image' in st.session_state:
                 vectors = []
                 for _, row in objects.iterrows():
                     if row["type"] == "line":
-                        left, top, width, height = row["left"], row["top"], row["width"], row["height"]
-                        x1, y1 = left, top
-                        x2, y2 = left + width, top + height
+                        left, top, width, height = float(row["left"]), float(row["top"]), float(row["width"]), float(row["height"])
+                        center_x = left + width / 2
+                        center_y = top + height / 2
+                        x1 = center_x + float(row["x1"])
+                        y1 = center_y + float(row["y1"])
+                        x2 = center_x + float(row["x2"])
+                        y2 = center_y + float(row["y2"])
                         vectors.append((x1, y1, x2, y2))
 
                 st.session_state['vectors'] = vectors
