@@ -12,17 +12,20 @@ response = requests.get(background_image_url)
 # Verify that the image was fetched successfully
 if response.status_code == 200:
     bg_image = Image.open(BytesIO(response.content)).convert("RGBA")
+    
+    # Display the background image
     st.image(bg_image, caption="Background Image for Debugging")
 
-    # Create a canvas component with a background image
+    # Create a canvas component with a transparent background
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
         stroke_width=3,  # Fixed stroke width
         stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
-        background_image=bg_image,
+        background_color=None,  # Transparent background color
+        background_image=None,  # No background image in the canvas itself
         update_streamlit=True,  # Always update in real time
-        height=400,
-        width=600,
+        height=bg_image.height,  # Match the height of the background image
+        width=bg_image.width,  # Match the width of the background image
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="full_app",
