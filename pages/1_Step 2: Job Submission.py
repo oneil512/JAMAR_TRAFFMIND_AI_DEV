@@ -56,24 +56,22 @@ if 'bg_image' in st.session_state:
     bg_image_bytes = base64.b64decode(st.session_state['bg_image'])
     bg_image = Image.open(BytesIO(bg_image_bytes))
 
-    # Create a canvas component with fixed settings
+    # Define colors for vectors
+    vector_colors = ["rgba(255, 0, 0, 1)", "rgba(0, 255, 0, 1)", "rgba(0, 0, 255, 1)", "rgba(255, 165, 0, 1)", "rgba(128, 0, 128, 1)"]
+
+    # Create a canvas component with dynamic settings
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
         stroke_width=3,  # Fixed stroke width
-        stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
+        stroke_color=vector_colors[0],  # Initial stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
         height=st.session_state.image_height,
         width=st.session_state.image_width,
         drawing_mode="line",  # Always in line drawing mode
-        display_toolbar=False,
+        display_toolbar=True,
         key="canvas",
     )
-
-    # Draw vector numbers
-    if st.session_state.get('vectors'):
-        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-            canvas_result.add_text(f"Vector {i+1}", x1, y1)
 
     st.markdown("""
 2. **Label Vectors**:
@@ -98,7 +96,7 @@ if 'bg_image' in st.session_state:
                 for i, (x1, y1, x2, y2) in enumerate(vectors):
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.write(f":blue[Vector {i + 1}]")
+                        st.markdown(f"<span style='color:{vector_colors[i % len(vector_colors)]};'>Vector {i + 1}</span>", unsafe_allow_html=True)
                     with col2:
                         directions_list = ["N", "E", "S", "W"]
                         option = None
