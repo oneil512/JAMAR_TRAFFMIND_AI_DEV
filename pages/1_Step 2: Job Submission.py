@@ -107,7 +107,7 @@ with col1:
             direction = st.session_state.get(f"button_{i}", "")
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
             text_x = (x1 + x2) / 2
-            text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
+            text_y = min(y1, y2) - 15  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
         st.image(img, caption="Review your vectors and labels", width=st.session_state.image_width)
