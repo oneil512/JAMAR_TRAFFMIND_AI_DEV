@@ -4,35 +4,38 @@ from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 import requests
+import hashlib
 
-
-def get_background_image_url(url):
+def get_background_image_url(img: Image, key: str):
+    """Convert the image to URL and handle server base URL path if needed."""
+    image_url = st.image_to_url(
+        img, width=None, clamp=True, channels="RGB", output_format="PNG",
+        image_id=f"drawable-canvas-bg-{hashlib.md5(img.tobytes()).hexdigest()}-{key}"
+    )
     base_url_path = st._config.get_option("server.baseUrlPath").strip("/")
     if base_url_path:
         base_url_path = "/" + base_url_path
-    return base_url_path + url
+    return base_url_path + image_url
 
-# URL of the background image
+# Load background image from URL
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
-
-# Modify the URL if necessary
-modified_image_url = get_background_image_url(background_image_url)
-
-# Load background image from the modified URL
-response = requests.get(modified_image_url)
+response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
 
-# Create a canvas component
+# Convert the background image to URL
+background_image_url = get_background_image_url(bg_image, key="full_app")
+
+# Create a canvas component with fixed settings
 canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",
-    stroke_width=3,
-    stroke_color="rgba(0, 0, 255, 1)",
-    background_color="#eee",
+    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+    stroke_width=3,  # Fixed stroke width
+    stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
+    background_color="#eee",  # Fixed background color
     background_image=bg_image,
-    update_streamlit=True,
+    update_streamlit=True,  # Always update in real time
     height=400,
     width=600,
-    drawing_mode="line",
+    drawing_mode="line",  # Always in line drawing mode
     display_toolbar=False,
     key="full_app",
 )
