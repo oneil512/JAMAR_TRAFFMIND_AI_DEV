@@ -3,6 +3,7 @@ from PIL import Image
 import requests
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
+import pandas as pd
 
 # Load and convert background image to PNG
 background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
