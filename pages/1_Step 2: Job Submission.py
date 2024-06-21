@@ -20,12 +20,6 @@ if 'vector_names' not in st.session_state:
 if 'names_to_vectors' not in st.session_state:
     st.session_state['names_to_vectors'] = defaultdict(list)
 
-refresh = st.button('Refresh Videos', key='refresh')
-
-if refresh:
-    names = list_files_paginated("jamar", "client_upload/", file_type='*')
-    st.session_state['vector_names'] = [name.split('/')[-1] for name in names]
-
 # Dropdown for selecting a background image
 bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'])
 
@@ -60,19 +54,17 @@ Welcome to the Insight AI Job Submission page. Follow the steps below to submit 
 
 1. **Select a Video**:
     - Choose a video from the dropdown menu below to draw vectors on it.
-
-2. **Draw Vectors**:
-    - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
-
-3. **Label Vectors**:
-    - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
-
-4. **Submit Job**:
-    - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
 """)
 
-# Create a canvas component with fixed settings
+bg_video_name = st.selectbox("Select a video to draw vectors on", st.session_state['vector_names'])
+
 if 'bg_image' in st.session_state:
+    st.markdown("""
+2. **Draw Vectors**:
+    - Use the canvas to draw vectors on the selected video frame. These vectors will be used to track objects in the video.
+    """)
+    
+    # Create a canvas component with fixed settings
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
         stroke_width=3,  # Fixed stroke width
@@ -86,12 +78,13 @@ if 'bg_image' in st.session_state:
         key="full_app",
     )
 
+    st.markdown("""
+3. **Label Vectors**:
+    - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
+    """)
+
     # Add a button to update Streamlit and show labeling options
     if st.button("Label Vectors"):
-        st.markdown("""
-        **Label Vectors**:
-        - After drawing vectors, specify the directions for each vector.
-        """)
         if canvas_result.json_data is not None:
             objects = pd.json_normalize(canvas_result.json_data["objects"])
             for col in objects.select_dtypes(include=["object"]).columns:
@@ -116,10 +109,15 @@ if 'bg_image' in st.session_state:
                         if option:
                             handle_click(option, i)
 
-# Add a button to submit the job
-if st.button("Submit Job"):
-    if 'vectors' in st.session_state and st.session_state['vectors']:
-        # Code to save vectors and submit the job for processing goes here
-        st.success("Job submitted successfully!")
-    else:
-        st.error("Please draw vectors and specify directions before submitting the job.")
+    st.markdown("""
+4. **Submit Job**:
+    - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
+    """)
+
+    # Add a button to submit the job
+    if st.button("Submit Job"):
+        if 'vectors' in st.session_state and st.session_state['vectors']:
+            # Code to save vectors and submit the job for processing goes here
+            st.success("Job submitted successfully!")
+        else:
+            st.error("Please draw vectors and specify directions before submitting the job.")
