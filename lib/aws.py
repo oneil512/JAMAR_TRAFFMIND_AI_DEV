@@ -60,6 +60,7 @@ import boto3
 from botocore.exceptions import ClientError
 import logging
 
+@st.cache_data
 def generate_presigned_url(bucket_name, object_name, expiration=3600):
     """Generate a presigned URL to share an S3 object.
 
@@ -105,25 +106,38 @@ def send_discord_notification(file_name, file_size_mb, title, description, color
     if response.status_code != 204:
         raise Exception(f"Request to Discord returned an error {response.status_code}, the response is:\n{response.text}")
 
+@st.cache_data
+def convert_vectors_to_lines(vectors):
+    if vectors is None:
+        return []
+    lines = []
+    for vector in vectors:
+        x1, y1, x2, y2 = vector
+        lines.append({"start": {"x": x1, "y": y1}, "end": {"x": x2, "y": y2}})
+    return lines
 
-
+@st.cache_data
 def convert_lines_to_vectors(lines_json):
     vectors = []
+    if not lines_json:
+        return vectors
     for line in lines_json:
-        center_x = line['left']
-        center_y = line['top']
+        if not line:
+            continue
+        if 'start' not in line or 'end' not in line:
+            continue
 
-        x1 = line['x1']
-        y1 = line['y1']
-        x2 = line['x2']
-        y2 = line['y2']
+        if not line['start'] or not line['end']:
+            continue
 
-        # transform into proper coordinates
-        x1 = x1 + center_x
-        y1 = y1 + center_y
+        if 'x' not in line['start'] or 'y' not in line['start'] or 'x' not in line['end'] or 'y' not in line['end']:
+            continue
 
-        x2 = x2 + center_x
-        y2 = y2 + center_y
+        x1 = line['start']['x']
+        y1 = line['start']['y']
+
+        x2 = line['end']['x']
+        y2 = line['end']['y']
 
         vectors.append((x1, y1, x2, y2))
 
@@ -147,12 +161,6 @@ def write_vectors_to_s3(vectors, bucket, key):
 def extract_first_frame(bucket, key):
     import cv2
 
-    from botocore.config import Config
-
-    my_config = Config(
-        signature_version = 's3v4',
-    )
-
     s3_client = boto3.client('s3', region_name="us-east-2", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     logger.warning("generating presigned url")
     
@@ -172,7 +180,6 @@ def extract_first_frame(bucket, key):
     # convert to RGB from BGR without opencv, just permute the channels
 
     if ret and frame is not None:
-        frame = frame[:, :, ::-1]
         return frame
     else:
         logger.warning(f'Failed to capture video from {url}')
