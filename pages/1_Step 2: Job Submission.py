@@ -47,8 +47,8 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            st.session_state.image_height = min(max(image_height, 300), 300)
-            st.session_state.image_width = min(max(image_width, 400), 400)
+            st.session_state.image_height = image_height
+            st.session_state.image_width = image_width
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
@@ -64,8 +64,8 @@ if 'bg_image' in st.session_state:
         stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
-        height=st.session_state.image_height,
-        width=st.session_state.image_width,
+        height=image_height,
+        width=image_width,
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="canvas",
@@ -86,7 +86,9 @@ if 'bg_image' in st.session_state:
                 vectors = []
                 for _, row in objects.iterrows():
                     if row["type"] == "line":
-                        vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
+                        x1, y1 = row["x1"], row["y1"]
+                        x2, y2 = row["x2"], row["y2"]
+                        vectors.append((x1, y1, x2, y2))
 
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
@@ -108,10 +110,10 @@ with col1:
             direction = st.session_state.get(f"button_{i}", "")
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
             text_x = (x1 + x2) / 2
-            text_y = (y1 + y2) / 2 - 20  # Position the text above the center of the line
+            text_y = min(y1, y2) - 15  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        st.image(img, caption="Review your vectors and labels", width=st.session_state.image_width)
+        st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
 with col2:
     if 'vectors' in st.session_state:
