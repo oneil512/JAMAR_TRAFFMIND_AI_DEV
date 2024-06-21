@@ -10,3 +10,4 @@ ultralytics
 supervision
 openai
 plotly
+streamlit-drawable-canvas==0.8.0
