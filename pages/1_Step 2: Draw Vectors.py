@@ -1,27 +1,26 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+import requests
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 
-# Upload image file
-uploaded_file = st.file_uploader("Upload a background image", type=["png", "jpg", "jpeg"])
-if uploaded_file:
-    bg_image = Image.open(uploaded_file)
-else:
-    bg_image = None
+# Load background image from URL
+background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-images/uploads/2023/11/right-of-way-rules.jpg.webp"
+response = requests.get(background_image_url)
+bg_image = Image.open(BytesIO(response.content))
 
-# Create a canvas component
+# Create a canvas component with fixed settings
 canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",
-    stroke_width=3,
-    stroke_color="rgba(0, 0, 255, 1)",
-    background_color="#eee",
+    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+    stroke_width=3,  # Fixed stroke width
+    stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
+    background_color="#eee",  # Fixed background color
     background_image=bg_image,
-    update_streamlit=True,
+    update_streamlit=True,  # Always update in real time
     height=400,
     width=600,
-    drawing_mode="line",
+    drawing_mode="line",  # Always in line drawing mode
     display_toolbar=False,
     key="full_app",
 )
