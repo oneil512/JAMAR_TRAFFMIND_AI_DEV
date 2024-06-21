@@ -99,7 +99,7 @@ if 'bg_image' in st.session_state:
                     with col1:
                         st.write(f":blue[Vector {i + 1}]")
                     with col2:
-                        directions_list = ["N", "E", S", "W"]
+                        directions_list = ["N", "E", "S", "W"]
                         option = None
                         option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                         if option:
