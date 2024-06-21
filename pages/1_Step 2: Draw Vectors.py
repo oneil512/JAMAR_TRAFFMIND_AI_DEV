@@ -8,7 +8,7 @@ import sys
 import time
 
 try:
-    import streamlit_random_generator
+    from streamlit_drawable_canvas import st_canvas
 
 # This block executes only on the first run when your package isn't installed
 except ModuleNotFoundError as e:
