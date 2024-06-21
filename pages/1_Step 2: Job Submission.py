@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 from lib.aws import list_files_paginated, extract_first_frame
@@ -75,7 +75,6 @@ if 'bg_image' in st.session_state:
     - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
     """)
 
-    # Add a button to update Streamlit and show labeling options
     if st.button("Label Vectors"):
         if canvas_result.json_data is not None:
             objects = pd.json_normalize(canvas_result.json_data["objects"])
@@ -95,36 +94,41 @@ if 'bg_image' in st.session_state:
     - Review the vectors and their labels in the image preview below.
     """)
 
-                col1, col2 = st.columns([1, 3])
-                with col1:
-                    for i, (x1, y1, x2, y2) in enumerate(vectors):
-                        st.write(f":blue[Vector {i + 1}]")
-                        directions_list = ["N", "E", "S", "W"]
-                        option = None
-                        option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
-                        if option:
-                            handle_click(option, i)
-                with col2:
-                    if 'vectors' in st.session_state and st.session_state['vectors']:
-                        img = Image.open(BytesIO(bg_image_bytes))
-                        draw = ImageDraw.Draw(img)
+col1, col2 = st.columns([1, 3])
+with col1:
+    if 'vectors' in st.session_state:
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+            st.write(f":blue[Vector {i + 1}]")
+            directions_list = ["N", "E", "S", "W"]
+            option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
+            if option:
+                handle_click(option, i)
 
-                        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                            direction = st.session_state.get(f"button_{i}", "")
-                            draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
-                            draw.text((x1, y1), direction, fill=(255, 0, 0))
+with col2:
+    if 'vectors' in st.session_state and st.session_state['vectors']:
+        img = Image.open(BytesIO(bg_image_bytes))
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype("arial.ttf", 16)
 
-                        st.image(img, caption="Review your vectors and labels")
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+            direction = st.session_state.get(f"button_{i}", "")
+            draw.line((x1, y1, x2, y2), fill=(0, 0, 0), width=3)
+            text_x = (x1 + x2) / 2
+            text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
+            draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)
 
-    st.markdown("""
+        st.image(img, caption="Review your vectors and labels")
+
+st.markdown("""
 4. **Submit Job**:
     - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
     """)
 
-    # Add a button to submit the job
-    if st.button("Submit Job"):
-        if 'vectors' in st.session_state and st.session_state['vectors']:
-            # Code to save vectors and submit the job for processing goes here
-            st.success("Job submitted successfully!")
-        else:
-            st.error("Please draw vectors and specify directions before submitting the job.")
+# Add a button to submit the job
+if st.button("Submit Job"):
+    if 'vectors' in st.session_state and st.session_state['vectors']:
+        # Code to save vectors and submit the job for processing goes here
+        st.success("Job submitted successfully!")
+    else:
+        st.error("Please draw vectors and specify directions before submitting the job.")
+
