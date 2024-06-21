@@ -46,8 +46,8 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            st.session_state.image_height = image_height
-            st.session_state.image_width = image_width
+            st.session_state.image_height = min(max(image_height, 400), 600)
+            st.session_state.image_width = min(max(image_width, 600), 800)
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
@@ -63,8 +63,8 @@ if 'bg_image' in st.session_state:
         stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
-        height=min(max(st.session_state.image_height, 400), 600),
-        width=min(max(st.session_state.image_width, 600), 800),
+        height=st.session_state.image_height,
+        width=st.session_state.image_width,
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="canvas",
@@ -108,7 +108,7 @@ with col1:
             text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        st.image(img, caption="Review your vectors and labels", use_column_width=True)
+        st.image(img, caption="Review your vectors and labels", width=st.session_state.image_width)
 
 with col2:
     if 'vectors' in st.session_state:
