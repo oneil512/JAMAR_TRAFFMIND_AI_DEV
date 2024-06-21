@@ -3,6 +3,8 @@ import pandas as pd
 from PIL import Image
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
+from streamlit.elements.image import image_to_url
+
 import requests
 import hashlib
 
@@ -20,7 +22,7 @@ response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
 
 # Convert the background image to URL
-image_url = st_image.image_to_url(
+image_url = image_to_url(
     bg_image, width=None, clamp=True, channels="RGB", output_format="PNG",
     image_id=f"drawable-canvas-bg-{hashlib.md5(bg_image.tobytes()).hexdigest()}-full_app"
 )
