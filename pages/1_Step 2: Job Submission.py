@@ -13,14 +13,6 @@ import os
 def handle_click(direction, index):
     st.session_state[f"button_{index}"] = direction
 
-# Load and display the CSV file
-file_path = "/mnt/data/2024-06-21T21-16_export.csv"
-df = pd.read_csv(file_path)
-
-# Display the content of the CSV file
-st.write("Contents of the uploaded CSV file:")
-st.dataframe(df)
-
 # Manage initial load and refresh with session state
 if 'vector_names' not in st.session_state:
     names = list_files_paginated("jamar", "client_upload/", file_type='*')
@@ -94,9 +86,7 @@ if 'bg_image' in st.session_state:
                 vectors = []
                 for _, row in objects.iterrows():
                     if row["type"] == "line":
-                        x1, y1 = row["x1"], row["y1"]
-                        x2, y2 = row["x2"], row["y2"]
-                        vectors.append((x1, y1, x2, y2))
+                        vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
 
                 st.session_state['vectors'] = vectors
                 st.session_state['names_to_vectors'][bg_video_name] = vectors
