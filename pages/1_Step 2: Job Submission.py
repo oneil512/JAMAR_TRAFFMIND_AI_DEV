@@ -47,8 +47,8 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            st.session_state.image_height = image_height
-            st.session_state.image_width = image_width
+            st.session_state.image_height = min(max(image_height, 300), 300)
+            st.session_state.image_width = min(max(image_width, 400), 400)
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
@@ -57,6 +57,9 @@ if 'bg_image' in st.session_state:
     bg_image_bytes = base64.b64decode(st.session_state['bg_image'])
     bg_image = Image.open(BytesIO(bg_image_bytes))
 
+    canvas_height = st.session_state.image_height
+    canvas_width = st.session_state.image_width
+
     # Create a canvas component with fixed settings
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
@@ -64,8 +67,8 @@ if 'bg_image' in st.session_state:
         stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
         background_image=bg_image,
         update_streamlit=True,  # Always update in real time
-        height=st.session_state.image_height,
-        width=st.session_state.image_width,
+        height=canvas_height,
+        width=canvas_width,
         drawing_mode="line",  # Always in line drawing mode
         display_toolbar=False,
         key="canvas",
@@ -100,18 +103,19 @@ col1, col2 = st.columns([3, 1])
 with col1:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
+        img = img.resize((canvas_width, canvas_height))  # Resize to match canvas
         draw = ImageDraw.Draw(img)
         font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
-        font = ImageFont.truetype(font_path, size=30)
+        font = ImageFont.truetype(font_path, size=20)  # Adjust font size as needed
 
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             direction = st.session_state.get(f"button_{i}", "")
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
             text_x = (x1 + x2) / 2
-            text_y = min(y1, y2) - 15  # Position the text above the center of the line
+            text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
             draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        st.image(img, caption="Review your vectors and labels", use_column_width=True)
+        st.image(img, caption="Review your vectors and labels", width=canvas_width)
 
 with col2:
     if 'vectors' in st.session_state:
