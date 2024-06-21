@@ -10,12 +10,11 @@ background_image_url = "https://www.crowsonlaw.com/wp-content/webp-express/webp-
 response = requests.get(background_image_url)
 bg_image = Image.open(BytesIO(response.content))
 
-# Create a canvas component with fixed settings
+# Create a canvas component with a background image
 canvas_result = st_canvas(
     fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
     stroke_width=3,  # Fixed stroke width
     stroke_color="rgba(0, 0, 255, 1)",  # Fixed stroke color
-    background_color="#eee",  # Fixed background color
     background_image=bg_image,
     update_streamlit=True,  # Always update in real time
     height=400,
