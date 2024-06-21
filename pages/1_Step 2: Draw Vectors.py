@@ -73,7 +73,7 @@ canvas_result = st_canvas(
     key="full_app",
 )
 
-# Add a button to update Streamlit and print drawn vectors
+# Add a button to update Streamlit and show labeling options
 if st.button("Next"):
     if canvas_result.json_data is not None:
         objects = pd.json_normalize(canvas_result.json_data["objects"])
@@ -81,15 +81,10 @@ if st.button("Next"):
             objects[col] = objects[col].astype("str")
 
         if not objects.empty:
-            st.subheader("Updated List of Line Drawings")
             vectors = []
             for _, row in objects.iterrows():
-                st.markdown(
-                    f'Start coords: ({row["x1"]:.2f}, {row["y1"]:.2f}), End coords: ({row["x2"]:.2f}, {row["y2"]:.2f})'
-                )
                 vectors.append((row["x1"], row["y1"], row["x2"], row["y2"]))
-            
-            st.dataframe(objects)
+
             st.session_state['vectors'] = vectors
             st.session_state['names_to_vectors'][bg_video_name] = vectors
 
