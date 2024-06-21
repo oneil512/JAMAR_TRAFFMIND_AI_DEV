@@ -25,7 +25,9 @@ except ModuleNotFoundError as e:
 
     # wait for subprocess to install package before running your actual code below
     time.sleep(sleep_time)
-    # remove the installing dependency
+    # remove the installing dependency warning
+    dependency_warning.empty()
+
 
 # from streamlit_drawable_canvas import st_canvas
 
