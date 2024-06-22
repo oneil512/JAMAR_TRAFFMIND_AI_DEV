@@ -122,9 +122,6 @@ if 'bg_image' in st.session_state:
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
                 direction = st.session_state.get(f"button_{i}", "")
                 draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
-                text_x = (x1 + x2) / 2
-                text_y = (y1 + y2) / 2 - 10
-                draw.text((text_x, text_y), direction, fill=(0, 0, 0))
 
             st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
