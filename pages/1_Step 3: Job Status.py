@@ -111,7 +111,7 @@ st.markdown("""
 st.markdown("""
 **3. Get Job Counts**: Click the button below to view the counts of your submitted jobs.
 """)
-st.markdown("[View Job Reports](pages/1_Step 4: Job Reports.py)")
+st.markdown("[View Job Reports](pages/1_Step 4: Traffic Reports.py)")
 
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
