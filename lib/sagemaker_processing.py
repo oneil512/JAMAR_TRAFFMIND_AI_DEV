@@ -21,33 +21,37 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     
     region = 'us-east-2'
     logger.info(f" starting sagemaker processing job for {infile}")
-    VERSION = "1.2.17"
+    VERSION = "1.2.29"
 
     # Initialize the SageMaker client
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
     # Specify the S3 bucket and file paths
-    bucket = "traffmind-client-unprocessed-jamar-dev"
-    out_bucket = "traffmind-client-processed-jamar-dev"
+    bucket = "jamar"
 
     # Specify the S3 bucket and file paths
    
     # This maps model class ids to client facing class names
     # Eg model assigns 0 to motorcycle, but motorcycle is class 1 in 13 bin classification scheme
-    class_mapping_path = "s3://traffmind-classifiers/yolov8n-cls-best-20240611-132930/class_mapping.json"
-    classifier_model_path = "s3://traffmind-classifiers/yolov8n-cls-best-20240611-132930/model.pt"
+    class_mapping_path = "s3://traffmind-classifiers/yolov8m-cls-best-20240617-120845/class_mapping.json"
+    classifier_model_path = "s3://traffmind-classifiers/yolov8m-cls-best-20240617-120845/model.pt"
 
     filetype = infile.split('.')[-1]
     base_filename = infile.split('/')[-1].replace(f'.{filetype}', '')
-    input_path = f's3://{bucket}/{infile}'
-    output_path = f's3://{out_bucket}/{datetime_str}/'
-    tracks_output_path = f's3://{out_bucket}/{datetime_str}/tracks/'
+    input_path = f's3://{bucket}/client_upload/{infile}'
+    output_path = f's3://{bucket}/outputs/{base_filename}_{datetime_str}'
+    tracks_output_path = f'{output_path}/tracks/'
 
     epoch_time = int(time.time())
     version_number = VERSION.replace(".", "-")
 
     hash_object = hashlib.md5(infile.encode())
     hash_filename = hash_object.hexdigest()
+
+    VECTORS_PREFIX = f"submissions/{base_filename}"
+
+    #Add vectors prefix to environment variables
+    environment_variables["VECTORS_PREFIX"] = VECTORS_PREFIX
     
 
     # Define the processing job configuration
@@ -55,7 +59,7 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     processing_job_config = {
         'ProcessingJobName': processing_job_name,
         'RoleArn': 'arn:aws:iam::134350563342:role/service-role/AmazonSageMaker-ExecutionRole-20240119T144933',
-        'Tags': [{'Key': 'Name', 'Value': base_filename},{'Key': 'FileType', 'Value': filetype}, {'Key': 'Version', 'Value': version_number}, {'Key': 'Datetime', 'Value': datetime_str}, {'Key': 'Machine', 'Value': machine}],
+        'Tags': [{'Key': 'Name', 'Value': base_filename},{'Key': 'FileType', 'Value': filetype}, {'Key': 'Client', 'Value': "Jamar"},{'Key': 'Version', 'Value': version_number}, {'Key': 'Datetime', 'Value': datetime_str}, {'Key': 'Machine', 'Value': machine}],
         'AppSpecification': {
             'ImageUri': f'134350563342.dkr.ecr.us-east-2.amazonaws.com/traffmind:{VERSION}',
         },
@@ -151,11 +155,12 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
 
 
 def run(infile):
+    classifier_yaml_path = "classifier/yolo_cls/yolov8m-cls-6.yaml"
     machine_types = ["ml.p3.2xlarge", "ml.g4dn.8xlarge"]
     while machine_types:
         machine_type = machine_types.pop()
         try:
-            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "EVERY": "3", "SHOW_VECTORS": "False", "CLASSIFIER_YAML_PATH": "classifier/yolo_cls/yolov8-cls-6.yaml", "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt"})
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "VECTORS_BUCKET": "jamar",  "EVERY": "3", "SHOW_VECTORS": "True", "CLASSIFIER_YAML_PATH": classifier_yaml_path, "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt", "WRITE_VIDEO": "True", "WRITE_TRACKS": "True", "VECTORS_PATTERN": "vector"})
             break
         except ClientError as e:
             print(e)
