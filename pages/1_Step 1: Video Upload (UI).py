@@ -2,6 +2,7 @@ import streamlit as st
 import logging
 import boto3
 from botocore.exceptions import NoCredentialsError
+from lib.aws import send_discord_notification
 import os
 
 # Initialize logger
