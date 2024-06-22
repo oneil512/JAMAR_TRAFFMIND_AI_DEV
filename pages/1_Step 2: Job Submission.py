@@ -9,6 +9,7 @@ import base64
 import cv2
 import os
 import logging
+from collections import defaultdict
 
 logger = logging.getLogger(st.__name__)
 
