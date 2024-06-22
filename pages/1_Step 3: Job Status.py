@@ -102,13 +102,10 @@ st.header("TraffMind AI Job Status")
 st.markdown("""
 Welcome to the TraffMind AI Job Status page. Follow the steps below to check the status of your submitted jobs and download processed videos.
 
-**1. Refresh Data**: Click the button below to refresh the list of processed videos.
+st.markdown("""
+**1. Download Video**: Use the main panel to download your processed videos.
 """)
 refresh = st.button('Refresh Data', key='refresh')
-st.markdown("""
-**2. Download Video**: After refreshing, use the main panel to download your processed videos.
-""")
-
 
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
@@ -125,7 +122,7 @@ if 'first_load' not in st.session_state or refresh:
         st.stop()
 
 st.markdown("""
-**3. Get Job Counts**: Click the button below to view the counts of your submitted jobs.
+**3. Get Job Counts**: Click the button below to view the reports of your submitted jobs.
 """)
 
 st.page_link(
