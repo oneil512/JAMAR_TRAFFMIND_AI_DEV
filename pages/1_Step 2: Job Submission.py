@@ -10,6 +10,7 @@ import cv2
 from collections import defaultdict
 import os
 import random
+import logging
 
 logger = logging.getLogger(st.__name__)
 
