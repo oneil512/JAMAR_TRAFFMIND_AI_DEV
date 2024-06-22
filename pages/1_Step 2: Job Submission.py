@@ -155,3 +155,13 @@ if st.button("Submit Job"):
         st.success("Job submitted successfully!")
     else:
         st.error("Please draw vectors and specify directions before submitting the job.")
+
+# Link to check status
+st.markdown("""
+**5. Job Status**: Once the job is submitted, check the job status.
+""")
+
+st.page_link(
+    "pages/1_Step 3: Job Status.py",
+    label=":blue[Step 2: Job Status]",
+    disabled=False)
