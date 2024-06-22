@@ -25,27 +25,12 @@ import pandas as pd
 import os
 from pytz import timezone
 
-def get_s3_status(tag_key, tag_value, region, access_key, secret_key, job_limit=50):
+def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
-    processing_jobs = []
-    next_token = None
-    
-    # Paginate through the list of processing jobs
-    while True:
-        if next_token:
-            response = sagemaker_client.list_processing_jobs(NextToken=next_token)
-        else:
-            response = sagemaker_client.list_processing_jobs()
-        
-        processing_jobs.extend(response['ProcessingJobSummaries'])
-        next_token = response.get('NextToken')
-        
-        if not next_token or len(processing_jobs) >= job_limit:
-            break
-    
-    # Limit the jobs to the first 50 if more than 50 were fetched
-    processing_jobs = processing_jobs[:job_limit]
+    # List all processing jobs
+    response = sagemaker_client.list_processing_jobs()
+    processing_jobs = response['ProcessingJobSummaries']
     
     filtered_jobs = []
     
@@ -53,13 +38,17 @@ def get_s3_status(tag_key, tag_value, region, access_key, secret_key, job_limit=
         job_name = job['ProcessingJobName']
         
         # Get the tags for the processing job
-        tags_response = sagemaker_client.list_tags(ResourceArn=job['ProcessingJobArn'])
+        tags_response = sagemaker_client.list_tags(
+            ResourceArn=job['ProcessingJobArn']
+        )
         tags = tags_response['Tags']
         
         # Check if the tag exists
         for tag in tags:
             if tag['Key'] == tag_key and tag['Value'] == tag_value:
-                job_details = sagemaker_client.describe_processing_job(ProcessingJobName=job_name)
+                job_details = sagemaker_client.describe_processing_job(
+                    ProcessingJobName=job_name
+                )
                 creation_time = job_details['CreationTime']
                 end_time = job_details.get('ProcessingEndTime')
                 duration = (end_time - creation_time).total_seconds() / 3600 if end_time else None
