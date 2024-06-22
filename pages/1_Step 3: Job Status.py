@@ -102,7 +102,6 @@ st.header("TraffMind AI Job Status")
 st.markdown("""
 Welcome to the TraffMind AI Job Status page. Follow the steps below to check the status of your submitted jobs and download processed videos.
 
-st.markdown("""
 **1. Download Video**: Use the main panel to download your processed videos.
 """)
 refresh = st.button('Refresh Data', key='refresh')
