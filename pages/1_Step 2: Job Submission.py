@@ -47,7 +47,6 @@ def get_image_from_frame(frame):
     return Image.fromarray(frame)
 
 if bg_video_name:
-    logger.warning(f"line 44, calling get image from frame: {bg_video_name}")
     if 'bg_video_name' not in st.session_state or st.session_state['bg_video_name'] != bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
@@ -59,12 +58,12 @@ if bg_video_name:
 if 'bg_image' in st.session_state:
     bg_image = st.session_state['bg_image']
     width, height = bg_image.size
+    fixed_height = 400
+    aspect_ratio = width / height
+    canvas_width = int(fixed_height * aspect_ratio)
+    canvas_height = fixed_height
 else:
-    width, height = 800, 800
-
-logger.warning(f"about to draw canvas")
-logger.warning(f"bg_image value: {bg_image}")
-logger.warning(f"bg_image session statevalue: {st.session_state.get('bg_image', None)}")
+    canvas_width, canvas_height = 800, 400
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
@@ -73,8 +72,8 @@ canvas_result = st_canvas(
     stroke_color='rgba(255, 0, 0, 1)',  # Red stroke color
     background_image=bg_image,
     update_streamlit=True,  # Always update in real time
-    height=height,
-    width=width,
+    height=canvas_height,
+    width=canvas_width,
     drawing_mode="line",  # Always in line drawing mode
     display_toolbar=True,
     key=st.session_state['bg_video_name'] + 'canvas' if st.session_state.get('bg_video_name', False) else "canvas"
@@ -91,10 +90,9 @@ if canvas_result.json_data is not None and canvas_result.json_data['objects'] !=
             st.write(f":blue[Vector {i + 1}]")
         with col2:
             directions_list = ["N", "S", "E", "W"]
-            option = None
             option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
             if option:
-                handle_click(option, i )
+                handle_click(option, i)
                 
     st.markdown("""
     3. **Review Labeling**:
@@ -144,7 +142,7 @@ st.markdown("""
 **4. Check Status**: Click the following link to check the status of your submission.
 """)
 st.page_link(
-    "pages/1_Step 3: Job Status.py",
-    label=":blue[Step 3: Job Status]",
+    "pages/1_Step 3: Traffic Tracker and Classifier.py",
+    label=":blue[Step 3: Traffic Tracker and Classifier]",
     disabled=False
 )
