@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
-from lib.aws import list_files_paginated, extract_first_frame
+from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
+from lib.sagemaker_processing import run
 import base64
 import cv2
 from collections import defaultdict
@@ -29,7 +30,6 @@ def base64_encode_image(frame):
     _, encoded_frame = cv2.imencode('.png', frame)
     return base64.b64encode(encoded_frame).decode('utf-8')
 
-# Header
 st.header("Insight AI Job Submission")
 
 st.markdown("""
@@ -64,14 +64,14 @@ if 'bg_image' in st.session_state:
 
     # Create a canvas component with fixed settings
     canvas_result = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
-        stroke_width=3,  # Fixed stroke width
-        stroke_color="rgba(255, 0, 0, 1)",  # Red stroke color
+        fill_color="rgba(255, 165, 0, 0.3)",
+        stroke_width=3,
+        stroke_color="rgba(255, 0, 0, 1)",
         background_image=bg_image,
-        update_streamlit=True,  # Always update in real time
+        update_streamlit=True,
         height=canvas_height,
         width=canvas_width,
-        drawing_mode="line",  # Always in line drawing mode
+        drawing_mode="line",
         display_toolbar=False,
         key="canvas",
     )
@@ -83,25 +83,9 @@ if 'bg_image' in st.session_state:
 
     if st.button("Label Vectors"):
         if canvas_result.json_data is not None:
-            objects = pd.json_normalize(canvas_result.json_data["objects"])
-            for col in objects.select_dtypes(include=["object"]).columns:
-                objects[col] = objects[col].astype("str")
-
-            if not objects.empty:
-                vectors = []
-                for _, row in objects.iterrows():
-                    if row["type"] == "line":
-                        left, top, width, height = float(row["left"]), float(row["top"]), float(row["width"]), float(row["height"])
-                        center_x = left + width / 2
-                        center_y = top + height / 2
-                        x1 = center_x + float(row["x1"])
-                        y1 = center_y + float(row["y1"])
-                        x2 = center_x + float(row["x2"])
-                        y2 = center_y + float(row["y2"])
-                        vectors.append((x1, y1, x2, y2))
-
-                st.session_state['vectors'] = vectors
-                st.session_state['names_to_vectors'][bg_video_name] = vectors
+            vectors = convert_lines_to_vectors(canvas_result.json_data["objects"])
+            st.session_state['vectors'] = vectors
+            st.session_state['names_to_vectors'][bg_video_name] = vectors
 
     st.markdown("""
 3. **Review Labeling**:
@@ -114,22 +98,18 @@ if 'bg_image' in st.session_state:
             img = Image.open(BytesIO(bg_image_bytes))
             img = img.resize((canvas_width, canvas_height))  # Resize to match canvas
             draw = ImageDraw.Draw(img)
-            font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
-            font = ImageFont.truetype(font_path, size=20)  # Adjust font size as needed
 
+            colors = ["red", "blue", "green", "yellow"]
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                direction = st.session_state.get(f"button_{i}", "")
-                draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
-                text_x = (x1 + x2) / 2
-                text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
-                draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
+                color = colors[i % len(colors)]
+                draw.line((x1, y1, x2, y2), fill=color, width=3)
 
-            st.image(img, caption="Review your vectors and labels", width=canvas_width)
+            st.image(img, caption="Review your vectors", width=canvas_width)
 
     with col2:
         if 'vectors' in st.session_state:
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                st.write(f":blue[Vector {i + 1}]")
+                st.write(f"Vector {i + 1}")
                 directions_list = ["N", "E", "S", "W"]
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                 if option:
@@ -140,10 +120,17 @@ st.markdown("""
     - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
     """)
 
-# Add a button to submit the job
 if st.button("Submit Job"):
     if 'vectors' in st.session_state and st.session_state['vectors']:
-        # Code to save vectors and submit the job for processing goes here
+        file_type = st.session_state.get('bg_video_name').split('.')[-1]
+
+        v = {}
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+            v[st.session_state.get(f'button_{i}')] = ((x1, y1), (x2, y2))
+        
+        write_vectors_to_s3(v, "jamar", f'submissions/{st.session_state.get("bg_video_name").replace("." + file_type, "")}/vectors.txt')
+
+        run(st.session_state.get("bg_video_name"))
         st.success("Job submitted successfully!")
     else:
         st.error("Please draw vectors and specify directions before submitting the job.")
