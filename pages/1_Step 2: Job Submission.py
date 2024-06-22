@@ -123,7 +123,7 @@ with col1:
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
             text_x = (x1 + x2) / 2
             text_y = (y1 + y2) / 2 - 25
-            draw.text((text_x, text_y), f"{i + 1}", fill=(255, 0, 0), font=font)  # Draw text in red
+            draw.text((text_x, text_y), f"{i + 1}", fill=(0, 0, 0), font=font)  # Draw text in red
 
         st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
