@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
 from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
@@ -73,18 +73,20 @@ canvas_result = st_canvas(
     key=st.session_state['bg_video_name'] + 'canvas' if st.session_state.get('bg_video_name', False) else "canvas"
 )
 
-# Step 2: Extract and label vectors
+# Extract vectors if canvas is not empty
+if canvas_result.json_data is not None and canvas_result.json_data['objects'] != []:
+    vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
+    st.session_state['vectors'] = vectors
+
+# Step 2: Label Vectors
 st.markdown("""
 2. **Label Vectors**:
     - Click the 'Label Vectors' button below to proceed to labeling the directions for each vector.
 """)
 
-if canvas_result.json_data is not None and canvas_result.json_data['objects'] != []:
-    vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
-    st.session_state['vectors'] = vectors
-
-    if st.button("Label Vectors"):
-        for i, (x1, y1, x2, y2) in enumerate(vectors):
+if st.button("Label Vectors"):
+    if 'vectors' in st.session_state and st.session_state['vectors']:
+        for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f":blue[Vector {i + 1}]")
@@ -93,6 +95,9 @@ if canvas_result.json_data is not None and canvas_result.json_data['objects'] !=
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                 if option:
                     handle_click(option, i)
+        st.success("Vectors labeled successfully!")
+    else:
+        st.error("No vectors to label. Please draw vectors first.")
 
 # Step 3: Review labeling
 st.markdown("""
