@@ -20,7 +20,12 @@ def generate_presigned_url(object_s3_uri, expiration=3600):
         return None
     return response
 
-def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
+import boto3
+import pandas as pd
+import os
+from pytz import timezone
+
+def get_s3_status(tag_key, tag_value, region, access_key, secret_key, job_limit=50):
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
     processing_jobs = []
@@ -36,8 +41,11 @@ def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
         processing_jobs.extend(response['ProcessingJobSummaries'])
         next_token = response.get('NextToken')
         
-        if not next_token:
+        if not next_token or len(processing_jobs) >= job_limit:
             break
+    
+    # Limit the jobs to the first 50 if more than 50 were fetched
+    processing_jobs = processing_jobs[:job_limit]
     
     filtered_jobs = []
     
