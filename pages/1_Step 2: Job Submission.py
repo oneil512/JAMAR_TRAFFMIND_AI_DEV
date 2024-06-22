@@ -3,7 +3,7 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
-from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
+from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3, send_discord_notification
 from lib.sagemaker_processing import run
 import base64
 import cv2
@@ -11,30 +11,6 @@ from collections import defaultdict
 import os
 import json
 import requests
-
-# Function to send Discord notification
-def send_discord_notification(file_name, title, description, color):
-    webhook_url = discord_webhook_url  # Make sure to define your Discord webhook URL
-    data = {
-        "embeds": [{
-            "title": title,
-            "description": description,
-            "color": color,
-            "fields": [
-                {"name": "File Name", "value": file_name, "inline": False}
-            ],
-            "footer": {
-                "text": "Streamlit App Notification"
-            }
-        }],
-        "username": "TraffMind AI"
-    }
-    response = requests.post(
-        webhook_url, data=json.dumps(data),
-        headers={'Content-Type': 'application/json'}
-    )
-    if response.status_code != 204:
-        raise Exception(f"Request to Discord returned an error {response.status_code}, the response is:\n{response.text}")
 
 # Function to handle button clicks
 def handle_click(direction, index):
