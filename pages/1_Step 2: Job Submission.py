@@ -9,7 +9,7 @@ import base64
 import cv2
 from collections import defaultdict
 import os
-import logging
+import random
 
 logger = logging.getLogger(st.__name__)
 
@@ -96,18 +96,22 @@ if canvas_result.json_data is not None and canvas_result.json_data['objects'] !=
             font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
             font = ImageFont.truetype(font_path, size=20)
 
+            # Assign unique colors to each vector
+            colors = ['#%06X' % random.randint(0, 0xFFFFFF) for _ in range(len(st.session_state['vectors']))]
+
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
                 direction = st.session_state.get(f"button_{i}", "")
-                draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
+                draw.line((x1, y1, x2, y2), fill=colors[i], width=3)
                 text_x = (x1 + x2) / 2
                 text_y = (y1 + y2) / 2 - 10
-                draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)
+                draw.text((text_x, text_y), f"V{i+1}", fill=colors[i], font=font)
 
             st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
     with col2:
         if 'vectors' in st.session_state:
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+                st.markdown(f"<span style='color:{colors[i]}'>{i + 1}</span>", unsafe_allow_html=True)
                 st.write(f":blue[Vector {i + 1}]")
                 directions_list = ["N", "E", "S", "W"]
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
