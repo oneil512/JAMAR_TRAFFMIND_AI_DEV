@@ -122,7 +122,7 @@ if 'first_load' not in st.session_state or refresh:
         st.stop()
 
 st.markdown("""
-**3. Get Job Counts**: Click the button below to view the reports of your submitted jobs.
+**2. Get Job Counts**: Click the button below to view the reports of your submitted jobs.
 """)
 
 st.page_link(
