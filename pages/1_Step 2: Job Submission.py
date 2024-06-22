@@ -88,26 +88,27 @@ if canvas_result.json_data is not None and canvas_result.json_data['objects'] !=
     vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
     st.session_state['vectors'] = vectors
 
-    colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"]  # Define some colors
-
     col1, col2 = st.columns([3, 1])
     with col1:
         if 'vectors' in st.session_state and st.session_state['vectors']:
             img = st.session_state['bg_image'].resize((width, height))
             draw = ImageDraw.Draw(img)
+            font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
+            font = ImageFont.truetype(font_path, size=20)
 
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                color = colors[i % len(colors)]  # Cycle through colors
                 direction = st.session_state.get(f"button_{i}", "")
-                draw.line((x1, y1, x2, y2), fill=color, width=3)
+                draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
+                text_x = (x1 + x2) / 2
+                text_y = (y1 + y2) / 2 - 10
+                draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)
 
             st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
     with col2:
         if 'vectors' in st.session_state:
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                color = colors[i % len(colors)]  # Cycle through colors
-                st.write(f":blue[Vector {i + 1}] - Color: {color}")
+                st.write(f":blue[Vector {i + 1}]")
                 directions_list = ["N", "E", "S", "W"]
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                 if option:
