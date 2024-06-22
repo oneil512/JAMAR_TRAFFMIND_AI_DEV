@@ -91,8 +91,8 @@ if st.button("Label Vectors"):
             for _, row in objects.iterrows():
                 if row["type"] == "line":
                     left, top, width, height = float(row["left"]), float(row["top"]), float(row["width"]), float(row["height"])
-                    center_x = left + width / 2
-                    center_y = top + height / 2
+                    center_x = left
+                    center_y = top
                     x1 = center_x + float(row["x1"])
                     y1 = center_y + float(row["y1"])
                     x2 = center_x + float(row["x2"])
