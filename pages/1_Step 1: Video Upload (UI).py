@@ -64,8 +64,4 @@ st.markdown("""
 **3. Job Submission**: Once the video is uploaded, submit the job for processing.
 """)
 
-st.page_link(
-    "pages/1_Step 2: Job Submission.py",
-    label=":blue[Step 2: Job Submission]",
-    disabled=False
-)
+st.markdown("[Step 2: Job Submission](pages/1_Step 2: Job Submission.py)")
