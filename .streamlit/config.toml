@@ -1,5 +1,5 @@
 [server]
-maxUploadSize=25600
+maxUploadSize=25000
 enableCORS = false
 enableXsrfProtection = false
 enableWebsocketCompression = false
