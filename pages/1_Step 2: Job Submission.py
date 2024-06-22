@@ -7,11 +7,8 @@ from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_
 from lib.sagemaker_processing import run
 import base64
 import cv2
-import os
-import logging
 from collections import defaultdict
-
-logger = logging.getLogger(st.__name__)
+import os
 
 # Function to handle button clicks
 def handle_click(direction, index):
@@ -51,10 +48,8 @@ if bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
             image_height, image_width, _ = frame.shape
-            fixed_height = 400
-            aspect_ratio = image_width / image_height
-            st.session_state.image_height = fixed_height
-            st.session_state.image_width = int(fixed_height * aspect_ratio)
+            st.session_state.image_height = image_height
+            st.session_state.image_width = image_width
             st.session_state['bg_image'] = base64_encode_image(frame)
             st.session_state['bg_video_name'] = bg_video_name
             st.session_state['canvas_result'] = None  # Clear canvas
@@ -122,18 +117,16 @@ if 'bg_image' in st.session_state:
     with col1:
         if 'vectors' in st.session_state and st.session_state['vectors']:
             img = Image.open(BytesIO(bg_image_bytes))
-            img = img.resize((canvas_width, canvas_height))  # Resize to match canvas
             draw = ImageDraw.Draw(img)
 
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
                 direction = st.session_state.get(f"button_{i}", "")
-                color = 'red' if direction == 'N' else 'green' if direction == 'S' else 'blue' if direction == 'E' else 'yellow'
-                draw.line((x1, y1, x2, y2), fill=color, width=3)
+                draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
                 text_x = (x1 + x2) / 2
                 text_y = (y1 + y2) / 2 - 10
-                draw.text((text_x, text_y), direction, fill=color)
+                draw.text((text_x, text_y), direction, fill=(0, 0, 0))
 
-            st.image(img, caption="Review your vectors and labels", width=canvas_width)
+            st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
     with col2:
         if 'vectors' in st.session_state:
