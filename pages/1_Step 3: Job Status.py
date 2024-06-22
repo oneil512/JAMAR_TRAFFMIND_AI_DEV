@@ -108,13 +108,12 @@ refresh = st.button('Refresh Data', key='refresh')
 st.markdown("""
 **2. Download Video**: After refreshing, use the main panel to download your processed videos.
 """)
-st.markdown("""
-**3. Get Job Counts**: Click the button below to view the counts of your submitted jobs.
-""")
-st.markdown("[View Job Reports](pages/1_Step 4: Traffic Reports.py)")
+
 
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
+    data_df = get_s3_status('Client', 'Jamar', region, access_key, secret_key)
+        show_table_with_links(data_df)
 
 if 'first_load' not in st.session_state or refresh:
     try:
@@ -124,3 +123,13 @@ if 'first_load' not in st.session_state or refresh:
     except Exception as e:
         st.error(f"No jobs have been submitted yet. Please submit a job to view processed videos.")
         st.stop()
+
+st.markdown("""
+**3. Get Job Counts**: Click the button below to view the counts of your submitted jobs.
+""")
+
+st.page_link(
+    "pages/1_Step 4: Traffic Reports.py",
+    label=":blue[Step 4: Traffic Reports]",
+    disabled=False
+)
