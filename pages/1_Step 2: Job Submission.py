@@ -163,5 +163,5 @@ st.markdown("""
 
 st.page_link(
     "pages/1_Step 3: Job Status.py",
-    label=":blue[Step 2: Job Status]",
+    label=":blue[Step 5: Job Status]",
     disabled=False)
