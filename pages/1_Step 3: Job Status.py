@@ -97,21 +97,21 @@ def show_table_with_links(df):
 
 st.set_page_config(page_title="Traffic Tracker - Processed Videos", layout="wide")
 
-st.header("TraffMind AI Traffic Tracker")
+st.header("TraffMind AI Job Status")
 
 st.markdown("""
-Experience our Traffic Tracker's capabilities firsthand. This feature automatically identifies and tracks vehicles with bounding boxes, enhancing traffic video analysis. This powerful tool can categorize vehicles into:
-- **6 bins**: For basic classification needs, such as distinguishing between motorcycles, cars, vans/light trucks, buses, single unit trucks, and combination trucks.
+Welcome to the TraffMind AI Job Status page. Follow the steps below to check the status of your submitted jobs and download processed videos.
 
-Follow the steps below to view and download your processed videos:
-""")
-st.markdown("""
 **1. Refresh Data**: Click the button below to refresh the list of processed videos.
 """)
 refresh = st.button('Refresh Data', key='refresh')
 st.markdown("""
 **2. Download Video**: After refreshing, use the main panel to download your processed videos.
 """)
+st.markdown("""
+**3. Get Job Counts**: Click the button below to view the counts of your submitted jobs.
+""")
+st.markdown("[View Job Reports](pages/1_Step 4: Job Reports.py)")
 
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
