@@ -1,62 +1,27 @@
 import streamlit as st
-import logging
-import boto3
-from botocore.exceptions import NoCredentialsError
-import os
-import json
-import requests
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
-from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3, send_discord_notification
+from lib.aws import list_files_paginated, extract_first_frame, convert_lines_to_vectors, write_vectors_to_s3
 from lib.sagemaker_processing import run
 import base64
 import cv2
 from collections import defaultdict
-
-# Initialize logger
-logger = logging.getLogger(__name__)
-
-# Set Streamlit page configuration
-st.set_page_config(layout="wide")
-
-# AWS S3 configuration
-AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-S3_BUCKET = 'jamar'
-UPLOAD_FOLDER = 'client_upload/'
-
-# Discord webhook URL
-discord_webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
-
-# Function to upload file to S3
-def upload_to_s3(file, bucket, folder, object_name=None):
-    if object_name is None:
-        object_name = folder + file.name
-
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=AWS_ACCESS_KEY,
-        aws_secret_access_key=AWS_SECRET_KEY
-    )
-
-    try:
-        s3_client.upload_fileobj(file, bucket, object_name)
-        return True
-    except NoCredentialsError:
-        return False
+import os
+import json
+import requests
 
 # Function to send Discord notification
-def send_discord_notification(file_name, file_size_mb, title, description, color):
+def send_discord_notification(file_name, title, description, color):
+    webhook_url = discord_webhook_url  # Make sure to define your Discord webhook URL
     data = {
         "embeds": [{
             "title": title,
             "description": description,
             "color": color,
             "fields": [
-                {"name": "File Name", "value": file_name, "inline": False},
-                {"name": "Size", "value": f"{file_size_mb:.2f} MB", "inline": False}
+                {"name": "File Name", "value": file_name, "inline": False}
             ],
             "footer": {
                 "text": "Streamlit App Notification"
@@ -65,52 +30,11 @@ def send_discord_notification(file_name, file_size_mb, title, description, color
         "username": "TraffMind AI"
     }
     response = requests.post(
-        discord_webhook_url, data=json.dumps(data),
+        webhook_url, data=json.dumps(data),
         headers={'Content-Type': 'application/json'}
     )
     if response.status_code != 204:
         raise Exception(f"Request to Discord returned an error {response.status_code}, the response is:\n{response.text}")
-
-# Header
-st.header("Insight AI Direct Video Upload")
-
-st.markdown("""
-You can now directly upload your videos through this page. Follow the steps below:
-
-1. **Select Video File**:
-    - Click on the "Browse files" button below to select the video file from your local device.
-    - Supported formats: MP4, H264.
-    - Maximum file size: 25 GB.
-
-2. **Upload Video**:
-    - After selecting the video file, it will automatically start uploading.
-""")
-
-uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "h264"], accept_multiple_files=False)
-
-if uploaded_file is not None:
-    if uploaded_file.size > 25 * 1024 * 1024 * 1024:
-        st.error("File size exceeds 25 GB limit.")
-    else:
-        if upload_to_s3(uploaded_file, S3_BUCKET, UPLOAD_FOLDER):
-            st.success(f"File {uploaded_file.name} uploaded successfully!")
-            file_size_mb = uploaded_file.size / (1024 * 1024)
-            send_discord_notification(
-                file_name=uploaded_file.name,
-                file_size_mb=file_size_mb,
-                title="New Video File Uploaded",
-                description=f"A new video file has been uploaded to S3 bucket {S3_BUCKET}.",
-                color=3066993  # Discord green color
-            )
-        else:
-            st.error("Failed to upload file to S3. Please check your AWS credentials.")
-
-# Link to check status
-st.markdown("""
-**3. Job Submission**: Once the video is uploaded, submit the job for processing.
-""")
-
-st.markdown("[Step 2: Job Submission](pages/1_Step 2: Job Submission.py)")
 
 # Function to handle button clicks
 def handle_click(direction, index):
@@ -255,12 +179,13 @@ if st.button("Submit Job"):
 
         run(st.session_state.get("bg_video_name"))
         st.success("Job submitted successfully!")
+        
+        # Send Discord notification
         send_discord_notification(
             file_name=st.session_state.get("bg_video_name"),
-            file_size_mb=0,  # Adjust if you have the size info
             title="New Job Submitted",
-            description=f"A new job has been submitted for video {st.session_state.get('bg_video_name')}.",
-            color=15105570  # Discord orange color
+            description=f"A new job has been submitted for the video {st.session_state.get('bg_video_name')}.",
+            color=3066993  # Discord green color
         )
     else:
         st.error("Please draw vectors and specify directions before submitting the job.")
