@@ -47,6 +47,7 @@ def get_image_from_frame(frame):
     return Image.fromarray(frame)
 
 if bg_video_name:
+    logger.warning(f"line 44, calling get image from frame: {bg_video_name}")
     if 'bg_video_name' not in st.session_state or st.session_state['bg_video_name'] != bg_video_name:
         frame = get_first_frame(bg_video_name)
         if frame is not None:
@@ -58,12 +59,12 @@ if bg_video_name:
 if 'bg_image' in st.session_state:
     bg_image = st.session_state['bg_image']
     width, height = bg_image.size
-    fixed_height = 400
-    aspect_ratio = width / height
-    canvas_width = int(fixed_height * aspect_ratio)
-    canvas_height = fixed_height
 else:
-    canvas_width, canvas_height = 800, 400
+    width, height = 800, 800
+
+logger.warning(f"about to draw canvas")
+logger.warning(f"bg_image value: {bg_image}")
+logger.warning(f"bg_image session statevalue: {st.session_state.get('bg_image', None)}")
 
 # Create a canvas component with fixed settings
 canvas_result = st_canvas(
@@ -72,71 +73,74 @@ canvas_result = st_canvas(
     stroke_color='rgba(255, 0, 0, 1)',  # Red stroke color
     background_image=bg_image,
     update_streamlit=True,  # Always update in real time
-    height=canvas_height,
-    width=canvas_width,
+    height=height,
+    width=width,
     drawing_mode="line",  # Always in line drawing mode
     display_toolbar=True,
     key=st.session_state['bg_video_name'] + 'canvas' if st.session_state.get('bg_video_name', False) else "canvas"
 )
 
-if canvas_result.json_data is not None and canvas_result.json_data['objects'] != []:
-    vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
-    st.session_state['vectors'] = vectors
+# Label Vectors button
+if st.button("Label Vectors"):
+    if canvas_result.json_data is not None and canvas_result.json_data['objects'] != []:
+        vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
+        st.session_state['vectors'] = vectors
 
-    for i, (x1, y1, x2, y2) in enumerate(vectors):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write(f":blue[Vector {i + 1}]")
-        with col2:
-            directions_list = ["N", "S", "E", "W"]
-            option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
-            if option:
-                handle_click(option, i)
-                
-    st.markdown("""
-    3. **Review Labeling**:
-        - Review the vectors and their labels in the image preview below.
-    """)
-
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        if 'vectors' in st.session_state and st.session_state['vectors']:
-            img = bg_image.copy()
-            draw = ImageDraw.Draw(img)
-            font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
-            font = ImageFont.truetype(font_path, size=20)  # Adjust font size as needed
-
-            for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                direction = st.session_state.get(f"button_{i}", "")
-                draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
-                text_x = (x1 + x2) / 2
-                text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
-                draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
-
-            st.image(img, caption="Review your vectors and labels", use_column_width=True)
-
-    with col2:
-        if 'vectors' in st.session_state:
-            for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+        for i, (x1, y1, x2, y2) in enumerate(vectors):
+            col1, col2 = st.columns(2)
+            
+            with col1:
                 st.write(f":blue[Vector {i + 1}]")
-                directions_list = ["N", "E", "S", "W"]
+            with col2:
+                directions_list = ["N", "S", "E", "W"]
+                option = None
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                 if option:
-                    handle_click(option, i)
+                    handle_click(option, i )
+        
+        st.markdown("""
+        3. **Review Labeling**:
+            - Review the vectors and their labels in the image preview below.
+        """)
 
-    if st.button("Save vectors and submit job"):
-        file_type = st.session_state.get('bg_video_name').split('.')[-1]
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if 'vectors' in st.session_state and st.session_state['vectors']:
+                img = bg_image.copy()
+                draw = ImageDraw.Draw(img)
+                font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
+                font = ImageFont.truetype(font_path, size=20)  # Adjust font size as needed
 
-        v = {}
-        for i, (x1, y1, x2, y2) in enumerate(vectors):
-            v[st.session_state.get(f'button_{i}')] = ((x1, y1), (x2, y2))
+                for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+                    direction = st.session_state.get(f"button_{i}", "")
+                    draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)  # Red lines
+                    text_x = (x1 + x2) / 2
+                    text_y = (y1 + y2) / 2 - 10  # Position the text above the center of the line
+                    draw.text((text_x, text_y), direction, fill=(0, 0, 0), font=font)  # Black text
 
-        write_vectors_to_s3(v, "jamar", f'submissions/{st.session_state.get("bg_video_name").replace("." + file_type, "")}/vectors.txt')
+                st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
-        run(st.session_state.get("bg_video_name"))
-        st.write("Vectors saved!")
-        st.write("Job submitted!")
+        with col2:
+            if 'vectors' in st.session_state:
+                for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+                    st.write(f":blue[Vector {i + 1}]")
+                    directions_list = ["N", "E", "S", "W"]
+                    option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
+                    if option:
+                        handle_click(option, i)
+
+        if st.button("Save vectors and submit job"):
+            file_type = st.session_state.get('bg_video_name').split('.')[-1]
+
+            v = {}
+            for i, (x1, y1, x2, y2) in enumerate(vectors):
+                v[st.session_state.get(f'button_{i}')] = ((x1, y1), (x2, y2))
+
+            write_vectors_to_s3(v, "jamar", f'submissions/{st.session_state.get("bg_video_name").replace("." + file_type, "")}/vectors.txt')
+
+            run(st.session_state.get("bg_video_name"))
+            st.write("Vectors saved!")
+            st.write("Job submitted!")
 
 st.markdown("""
 **4. Check Status**: Click the following link to check the status of your submission.
