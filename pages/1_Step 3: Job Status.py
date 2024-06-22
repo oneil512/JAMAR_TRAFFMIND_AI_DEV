@@ -29,7 +29,7 @@ def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
     # List all processing jobs
-    response = sagemaker_client.list_processing_jobs(MaxResults=100)
+    response = sagemaker_client.list_processing_jobs(MaxResults=25)
     processing_jobs = response['ProcessingJobSummaries']
     
     filtered_jobs = []
