@@ -113,7 +113,7 @@ st.markdown("""
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
     data_df = get_s3_status('Client', 'Jamar', region, access_key, secret_key)
-        show_table_with_links(data_df)
+    show_table_with_links(data_df)
 
 if 'first_load' not in st.session_state or refresh:
     try:
