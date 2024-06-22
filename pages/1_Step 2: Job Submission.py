@@ -9,7 +9,6 @@ import base64
 import cv2
 from collections import defaultdict
 import os
-import random
 import logging
 
 logger = logging.getLogger(st.__name__)
@@ -76,7 +75,7 @@ canvas_result = st_canvas(
     stroke_width=stroke_width,
     stroke_color='Black',
     background_color="#000000",
-    background_image=bg_image if 'bg_image' in st.session_state else None,
+    background_image=st.session_state.get('bg_image'),
     update_streamlit=True,
     width=width,
     height=height,
@@ -89,31 +88,26 @@ if canvas_result.json_data is not None and canvas_result.json_data['objects'] !=
     vectors = convert_lines_to_vectors(canvas_result.json_data['objects'])
     st.session_state['vectors'] = vectors
 
+    colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"]  # Define some colors
+
     col1, col2 = st.columns([3, 1])
     with col1:
         if 'vectors' in st.session_state and st.session_state['vectors']:
             img = st.session_state['bg_image'].resize((width, height))
             draw = ImageDraw.Draw(img)
-            font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
-            font = ImageFont.truetype(font_path, size=20)
-
-            # Assign unique colors to each vector
-            colors = ['#%06X' % random.randint(0, 0xFFFFFF) for _ in range(len(st.session_state['vectors']))]
 
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
+                color = colors[i % len(colors)]  # Cycle through colors
                 direction = st.session_state.get(f"button_{i}", "")
-                draw.line((x1, y1, x2, y2), fill=colors[i], width=3)
-                text_x = (x1 + x2) / 2
-                text_y = (y1 + y2) / 2 - 10
-                draw.text((text_x, text_y), f"V{i+1}", fill=colors[i], font=font)
+                draw.line((x1, y1, x2, y2), fill=color, width=3)
 
             st.image(img, caption="Review your vectors and labels", use_column_width=True)
 
     with col2:
         if 'vectors' in st.session_state:
             for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
-                st.markdown(f"<span style='color:{colors[i]}'>{i + 1}</span>", unsafe_allow_html=True)
-                st.write(f":blue[Vector {i + 1}]")
+                color = colors[i % len(colors)]  # Cycle through colors
+                st.write(f":blue[Vector {i + 1}] - Color: {color}")
                 directions_list = ["N", "E", "S", "W"]
                 option = st.selectbox(f"Vector {i + 1} Direction", directions_list, key=f"direction_{i}")
                 if option:
