@@ -116,7 +116,7 @@ with col1:
     if 'vectors' in st.session_state and st.session_state['vectors']:
         img = Image.open(BytesIO(bg_image_bytes))
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("arial.ttf", size=50)  # Example using Arial font
+        font = ImageFont.truetype("lib/Arial.ttf", size=50)  # Example using Arial font
 
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             draw.line((x1, y1, x2, y2), fill=(255, 0, 0), width=3)
