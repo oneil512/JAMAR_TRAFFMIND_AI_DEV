@@ -56,6 +56,14 @@ if uploaded_file is not None:
     else:
         if upload_to_s3(uploaded_file, S3_BUCKET, UPLOAD_FOLDER):
             st.success(f"File {uploaded_file.name} uploaded successfully!")
+            file_size_mb = uploaded_file.size / (1024 * 1024)
+            send_discord_notification(
+                file_name=uploaded_file.name,
+                file_size_mb=file_size_mb,
+                title="New Video File Uploaded",
+                description=f"A new video file has been uploaded to S3 bucket {S3_BUCKET}.",
+                color=3066993  # Discord green color
+            )
         else:
             st.error("Failed to upload file to S3. Please check your AWS credentials.")
 
