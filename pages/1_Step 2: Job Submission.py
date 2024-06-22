@@ -144,7 +144,7 @@ st.markdown("""
 **4. Check Status**: Click the following link to check the status of your submission.
 """)
 st.page_link(
-    "pages/1_Step 3: Traffic Tracker and Classifier.py",
-    label=":blue[Step 3: Traffic Tracker and Classifier]",
+    "pages/1_Step 3: Job Status.py",
+    label=":blue[Step 3: Job Status]",
     disabled=False
 )
