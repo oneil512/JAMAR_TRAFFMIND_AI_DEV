@@ -14,7 +14,7 @@ import streamlit
 logger = logging.getLogger(streamlit.__name__)
 
 
-def start_sagemaker_processing_job(infile, machine, environment_variables):
+def start_sagemaker_processing_job(infile, machine, environment_variables, write_video):
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
     datetime_str = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
@@ -29,8 +29,6 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     # Specify the S3 bucket and file paths
     bucket = "jamar"
 
-    # Specify the S3 bucket and file paths
-   
     # This maps model class ids to client facing class names
     # Eg model assigns 0 to motorcycle, but motorcycle is class 1 in 13 bin classification scheme
     class_mapping_path = "s3://traffmind-classifiers/yolov8m-cls-best-20240617-120845/class_mapping.json"
@@ -50,12 +48,50 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
 
     VECTORS_PREFIX = f"submissions/{base_filename}"
 
-    #Add vectors prefix to environment variables
+    # Add vectors prefix to environment variables
     environment_variables["VECTORS_PREFIX"] = VECTORS_PREFIX
-    
 
     # Define the processing job configuration
     processing_job_name = f"fn-{hash_filename}-vn-{version_number}-e-{epoch_time}"
+    processing_outputs = [
+        {
+            "OutputName": "median_frame",
+            "S3Output": {
+                "S3Uri": output_path,
+                "LocalPath": "/opt/ml/processing/median_frame/",
+                "S3UploadMode": "EndOfJob"
+            }
+        },
+        {
+            "OutputName": "counts",
+            "S3Output": {
+                "S3Uri": output_path,
+                "LocalPath": "/opt/ml/processing/counts/",
+                "S3UploadMode": "EndOfJob"
+            }
+        },
+        {
+            "OutputName": "successful_tracks",
+            "S3Output": {
+                "S3Uri": tracks_output_path,
+                "LocalPath": "/opt/ml/processing/all_tracks_objects/",
+                "S3UploadMode": "EndOfJob"
+            }
+        }
+    ]
+
+    if write_video:
+        processing_outputs.append(
+            {
+                "OutputName": "output_video",
+                "S3Output": {
+                    "S3Uri": output_path,
+                    "LocalPath": "/opt/ml/processing/output/",
+                    "S3UploadMode": "EndOfJob"
+                }
+            }
+        )
+
     processing_job_config = {
         'ProcessingJobName': processing_job_name,
         'RoleArn': 'arn:aws:iam::134350563342:role/service-role/AmazonSageMaker-ExecutionRole-20240119T144933',
@@ -95,44 +131,7 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
         }
         ],
         "ProcessingOutputConfig": {
-            "Outputs": [
-                {
-                "OutputName": "output_video",
-                
-            "S3Output": {
-                "S3Uri": output_path,
-                "LocalPath": "/opt/ml/processing/output/",
-                "S3UploadMode": "EndOfJob"
-            }
-        },
-        {
-            "OutputName": "median_frame",
-                
-            "S3Output": {
-                "S3Uri": output_path,
-                "LocalPath": "/opt/ml/processing/median_frame/",
-                "S3UploadMode": "EndOfJob"
-            }
-        },
-        {
-            "OutputName": "counts",
-                
-            "S3Output": {
-                "S3Uri": output_path,
-                "LocalPath": "/opt/ml/processing/counts/",
-                "S3UploadMode": "EndOfJob"
-            }
-        },
-        {
-            "OutputName": "successful_tracks",
-                
-            "S3Output": {
-                "S3Uri": tracks_output_path,
-                "LocalPath": "/opt/ml/processing/all_tracks_objects/",
-                "S3UploadMode": "EndOfJob"
-            }
-        }
-        ]
+            "Outputs": processing_outputs
         },
         'Environment': environment_variables,
         'ProcessingResources': {
@@ -153,14 +152,13 @@ def start_sagemaker_processing_job(infile, machine, environment_variables):
     return response
 
 
-
-def run(infile):
+def run(infile, write_video=True):
     classifier_yaml_path = "classifier/yolo_cls/yolov8m-cls-6.yaml"
     machine_types = ["ml.p3.2xlarge", "ml.g4dn.8xlarge"]
     while machine_types:
         machine_type = machine_types.pop()
         try:
-            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "VECTORS_BUCKET": "jamar",  "EVERY": "3", "SHOW_VECTORS": "True", "CLASSIFIER_YAML_PATH": classifier_yaml_path, "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt", "WRITE_VIDEO": "True", "WRITE_TRACKS": "True", "VECTORS_PATTERN": "vector"})
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "VECTORS_BUCKET": "jamar", "EVERY": "3", "SHOW_VECTORS": "True", "CLASSIFIER_YAML_PATH": classifier_yaml_path, "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt", "WRITE_VIDEO": "True", "WRITE_TRACKS": "True", "VECTORS_PATTERN": "vector"}, write_video)
             break
         except ClientError as e:
             print(e)
