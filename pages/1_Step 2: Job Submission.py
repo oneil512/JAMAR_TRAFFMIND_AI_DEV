@@ -142,6 +142,9 @@ st.markdown("""
     - Once all vectors are drawn and directions are specified, click the 'Submit Job' button to submit your video for processing.
 """)
 
+# Add checkbox for video output option
+write_video = st.checkbox("Include video output", value=True)
+
 # Add a button to submit the job
 if st.button("Submit Job"):
     if 'vectors' in st.session_state and st.session_state['vectors']:
@@ -153,7 +156,7 @@ if st.button("Submit Job"):
         
         write_vectors_to_s3(v, "jamar", f'submissions/{st.session_state.get("bg_video_name").replace("." + file_type, "")}/vectors.txt')
 
-        run(st.session_state.get("bg_video_name"))
+        run(st.session_state.get("bg_video_name"), write_video=write_video)
         st.success("Job submitted successfully!")
         
         # Send Discord notification
