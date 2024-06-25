@@ -1,0 +1,18 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Pull latest code from GitHub
+      run: |
+        ssh -i ~/.ssh/id_rsa ec2-user@ec2-18-221-41-210.us-east-2.compute.amazonaws.com 'cd /home/ec2-user/JAMAR_TRAFFMIND_AI_DEV && git pull'
