@@ -14,9 +14,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Write SSH key to a temporary file
+
       run: |
-        echo "${{ secrets.STREAMLIT }}" > /tmp/streamlit.pem
+        echo "$SSH_KEY" > /tmp/streamlit.pem
         chmod 600 /tmp/streamlit.pem
+      shell: bash
+      env:
+        SSH_KEY: ${{secrets.STREAMLIT}}
 
     - name: Pull latest code from GitHub
       run: |
