@@ -1,5 +1,8 @@
+streamlit
+opencv-python-headless
 boto3
 pandas
+<<<<<<< HEAD
 tensorflow
 Pillow
 numpy
@@ -10,3 +13,6 @@ ultralytics
 supervision
 openai
 streamlit-drawable-canvas
+=======
+streamlit-drawable-canvas==0.9.3
+>>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9

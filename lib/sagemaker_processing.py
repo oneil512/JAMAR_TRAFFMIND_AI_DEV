@@ -156,3 +156,19 @@ def start_sagemaker_processing_job(infile, machine, environment_variables, write
     # Start the processing job
     response = sagemaker_client.create_processing_job(**processing_job_config)
     print(f"Processing job started with ARN: {response['ProcessingJobArn']}")
+
+def run(infile, write_video=True):
+    classifier_yaml_path = "classifier/yolo_cls/yolov8m-cls-6.yaml"
+    machine_types = ["ml.p3.2xlarge", "ml.g4dn.8xlarge"]
+    while machine_types:
+        machine_type = machine_types.pop()
+        try:
+            start_sagemaker_processing_job(infile, machine_type, {"AWS": "True", "VECTORS_BUCKET": "jamar", "EVERY": "3","MACHINE":machine_type, "SHOW_VECTORS": "True", "CLASSIFIER_YAML_PATH": classifier_yaml_path, "IMAGE_CLASSIFIER_PATH": "/opt/ml/processing/model/model.pt", "WRITE_VIDEO": "True", "WRITE_TRACKS": "True", "VECTORS_PATTERN": "vector"}, write_video)
+            break
+        except ClientError as e:
+            print(e)
+            logger.info(f"Failed to start processing job. error: {e}")
+        except Exception as e:
+            logger.info(f"Failed to start processing job. error: {e}")
+            print(e)
+            raise

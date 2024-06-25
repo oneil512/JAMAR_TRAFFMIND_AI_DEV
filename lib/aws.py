@@ -1,18 +1,27 @@
 import boto3
 import os
 import pandas as pd
+<<<<<<< HEAD
 from pytz import timezone
 import hashlib
 import cv2
+=======
+import requests
+import json
+import logging
+import streamlit as st
+
+logger = logging.getLogger(st.__name__)
+
+>>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
 # read keys in from environment variables
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-
+discord_webhook_url = os.getenv("WEBHOOK_URL")
 region = 'us-east-2'
-unprocessed_bucket = "traffmind-client-unprocessed-jamar-dev"
-processed_bucket = "traffmind-client-processed-jamar-dev"
 
+<<<<<<< HEAD
 
 def extract_first_frame(bucket, key):
     s3_client = boto3.client('s3')
@@ -39,10 +48,13 @@ def download_file(bucket_name, file_name, path, region=None):
 
     if region is None:
         region = 'us-east-2'
+=======
+def download_file(bucket_name, key, local_path):
+>>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
     s3_client = boto3.client("s3", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    print(f"Downloading. bucket: {bucket_name}, file: {file_name}, path: {path}")
-    s3_client.download_file(bucket_name, path, file_name)
+    print(f"Downloading. bucket: {bucket_name}, key: {key}, local_path: {local_path}")
+    s3_client.download_file(bucket_name, key, local_path)
 
 def list_files_paginated(bucket_name, prefix, file_type='*'):
 
@@ -78,95 +90,32 @@ def list_files(bucket_name, prefix, file_type='*'):
 
     return files
 
-def get_s3_status():
-    # Initialize SageMaker client
-    sm = boto3.client("sagemaker", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    paginator = sm.get_paginator('list_processing_jobs')
-    response_iterator = paginator.paginate(
-        PaginationConfig={
-            'MaxItems': 1000,
-            'PageSize': 100,
-        }
-    )
-    jobs = {'ProcessingJobSummaries': []}
-    for page in response_iterator:
-        if 'ProcessingJobSummaries' in page:
-            jobs['ProcessingJobSummaries'] += page['ProcessingJobSummaries']
+def list_files_paginated(bucket_name, prefix, file_type='*'):
 
-    jobs_df = pd.DataFrame(jobs['ProcessingJobSummaries'])
-    jobs_df['hash_name'] = jobs_df['ProcessingJobName'].apply(lambda x: x.split('-')[1])
-    jobs_df['CreationTime'] = pd.to_datetime(jobs_df['CreationTime'], utc=True)
-    jobs_df['ProcessingEndTime'] = pd.to_datetime(jobs_df['ProcessingEndTime'], utc=True)
-    jobs_df['LastModifiedTime'] = pd.to_datetime(jobs_df['LastModifiedTime'], utc=True)
+    s3_client = boto3.client('s3')
+    paginator = s3_client.get_paginator('list_objects_v2')
 
-    # Initialize S3 client
-    s3 = boto3.client("s3", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    names = []
     
-    # Check if the bucket is empty
-    try:
-        unprocessed_files = s3.list_objects_v2(Bucket=unprocessed_bucket)
-        status_df = pd.DataFrame(unprocessed_files['Contents'])
-        status_df['hash_name'] = status_df['Key'].apply(lambda x: hashlib.md5(x.encode()).hexdigest())
-        status_df['LastModified'] = pd.to_datetime(status_df['LastModified'], utc=True)
-        # keep key without extension
-        status_df['Key'] = status_df['Key'].apply(lambda x: '.'.join(x.split('.')[:-1]))
-    except KeyError:
-        status_df = pd.DataFrame(columns=['Key', 'LastModified', 'hash_name'])
-    
-    # Check if the processed files exist
-    try:
-        processed_files = s3.list_objects_v2(Bucket=processed_bucket)
-        processed_files_df = pd.DataFrame(processed_files['Contents'])
-        processed_files_df['file_path'] = processed_files_df['Key']
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        for obj in page.get('Contents', []):
+            key = obj['Key']
+            if type(file_type) is list:
+                for ft in file_type:
+                    if key.endswith(ft):
+                        names.append(key)
+            elif file_type == '*' or key.endswith(file_type):
+                # get presigned url
+                names.append(key)
 
-        # this is breaking it
-        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('/')[1])
-        processed_files_df['extension'] = processed_files_df['Key'].apply(lambda x: x.split('.')[-1])
-        # remove extension from Key
-        processed_files_df = processed_files_df[processed_files_df['extension'].isin(['mp4', 'h264'])]
-        processed_files_df['Key'] = processed_files_df['Key'].apply(lambda x: x.split('_2024-')[0])
-        processed_files_df = processed_files_df[['Key', 'file_path']]
-    except KeyError:
-        processed_files_df = pd.DataFrame(columns=['Key', 'file_path'])
-    
-    try:
-        # Merge DataFrames on hash_name
-        merged_df = pd.merge(status_df, jobs_df, on='hash_name', how='left')
-        time_difference = merged_df['LastModified'] - merged_df['CreationTime']
-        merged_df = merged_df[time_difference.abs() <= pd.Timedelta(minutes=5)]
-
-        # Calculate processing duration in hours and format datetime fields for EST
-        merged_df['Duration (hrs)'] = ((merged_df['ProcessingEndTime'] - merged_df['CreationTime']).dt.total_seconds() / 3600).round(1)
-        est = timezone('America/New_York')
-        merged_df['CreationTime'] = merged_df['CreationTime'].dt.tz_convert(est).dt.strftime('%Y-%m-%d %I:%M %p')
-        merged_df['ProcessingEndTime'] = merged_df['ProcessingEndTime'].dt.tz_convert(est).dt.strftime('%Y-%m-%d %I:%M %p')
-        # merged_df['Key'] = merged_df['Key'].str.replace('.mp4', '', regex=False)
-        # merged_df['Key'] = merged_df['Key'].str.replace('.h264', '', regex=False)
-        merged_df = pd.merge(merged_df, processed_files_df, on='Key', how='left')
-        # add download link if Status is Completed
-        merged_df['Download Link'] = merged_df.apply(lambda x: generate_presigned_url(processed_bucket, x['file_path']) if (x['ProcessingJobStatus'] == 'Completed' and type(x['file_path']) is str) else None, axis=1)
-
-        # Rename columns and filter necessary fields
-        merged_df = merged_df.rename(columns={'Key': 'File Name', 'CreationTime': 'Start Time', 'ProcessingEndTime': 'End Time', 'ProcessingJobStatus': 'Status'})
-        merged_df = merged_df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link']]
-        merged_df.reset_index(drop=True, inplace=True)
-        merged_df = merged_df.sort_values(by=['Status', 'End Time'], ascending=[True, False])
-    except Exception as e:
-        print(f"exception: {e}")
-        merged_df = pd.DataFrame(columns=['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link'])
-        merged_df = merged_df.sort_values(by=['Status', 'End Time'], ascending=[True, False])
-        # order by Status and End Time
-
-    # sort in terms of Start Time desc
-    merged_df = merged_df.sort_values(by=['Start Time'], ascending=False)
-    
-    return merged_df
+    return names
 
 
 import boto3
 from botocore.exceptions import ClientError
 import logging
 
+@st.cache_data
 def generate_presigned_url(bucket_name, object_name, expiration=3600):
     """Generate a presigned URL to share an S3 object.
 
@@ -188,6 +137,7 @@ def generate_presigned_url(bucket_name, object_name, expiration=3600):
 
     return response
 
+<<<<<<< HEAD
 
 def convert_lines_to_vectors(lines_json):
     vectors = []
@@ -206,12 +156,118 @@ def convert_lines_to_vectors(lines_json):
 
         x2 = x2 + center_x
         y2 = y2 + center_y
+=======
+def send_discord_notification(file_name, title, description, color, file_size_mb=None):
+    webhook_url = discord_webhook_url  # Make sure to define your Discord webhook URL
+    fields = [
+        {"name": "File Name", "value": file_name, "inline": False}
+    ]
+    
+    if file_size_mb is not None:
+        fields.append({"name": "Size", "value": f"{file_size_mb:.2f} MB", "inline": False})
+    
+    data = {
+        "embeds": [{
+            "title": title,
+            "description": description,
+            "color": color,
+            "fields": fields,
+            "footer": {
+                "text": "Streamlit App Notification"
+            }
+        }],
+        "username": "TraffMind AI"
+    }
+    
+    response = requests.post(
+        webhook_url, data=json.dumps(data),
+        headers={'Content-Type': 'application/json'}
+    )
+    if response.status_code != 204:
+        raise Exception(f"Request to Discord returned an error {response.status_code}, the response is:\n{response.text}")
+
+@st.cache_data
+def convert_vectors_to_lines(vectors):
+    if vectors is None:
+        return []
+    lines = []
+    for vector in vectors:
+        x1, y1, x2, y2 = vector
+        lines.append({"start": {"x": x1, "y": y1}, "end": {"x": x2, "y": y2}})
+    return lines
+
+@st.cache_data
+def convert_lines_to_vectors(lines_json):
+    vectors = []
+    if not lines_json:
+        return vectors
+    for line in lines_json:
+        if not line:
+            continue
+        if 'start' not in line or 'end' not in line:
+            continue
+
+        if not line['start'] or not line['end']:
+            continue
+
+        if 'x' not in line['start'] or 'y' not in line['start'] or 'x' not in line['end'] or 'y' not in line['end']:
+            continue
+
+        x1 = line['start']['x']
+        y1 = line['start']['y']
+
+        x2 = line['end']['x']
+        y2 = line['end']['y']
+>>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
         vectors.append((x1, y1, x2, y2))
 
     return vectors
 
 def write_vectors_to_s3(vectors, bucket, key):
+<<<<<<< HEAD
     print(f"Writing vectors to S3: {bucket}/{key}")
     s3_client = boto3.client('s3')
     s3_client.put_object(Body=str(vectors), Bucket=bucket, Key=key)
+=======
+    l = []
+    print(f"Writing vectors to S3: {bucket}/{key}")
+    s3_client = boto3.client('s3')
+    for direction,point_pair in vectors.items():
+        l.append(f"{int(point_pair[0][0])},{int(point_pair[0][1])},{direction}")
+        l.append(f"{int(point_pair[1][0])},{int(point_pair[1][1])},{direction}")
+
+    out = "\n".join(l)
+
+    s3_client.put_object(Body=out, Bucket=bucket, Key=key)
+
+
+
+
+def extract_first_frame(bucket, key):
+    import cv2
+
+    s3_client = boto3.client('s3', region_name="us-east-2", aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    logger.warning("generating presigned url")
+    
+    # Generate a pre-signed URL to access the video
+    url = s3_client.generate_presigned_url('get_object', 
+                                           Params={'Bucket': bucket, 'Key': key}, 
+                                           ExpiresIn=7600)
+
+    logger.warning(f"presigned url: {url}")
+    # Use OpenCV to capture the first frame
+    logger.warning(f"capturing video from {url}")
+    cap = cv2.VideoCapture(url)
+    ret, frame = cap.read()
+    cap.release()
+    logger.warning(f"frame is not None: {frame is not None}")
+
+    # convert to RGB from BGR without opencv, just permute the channels
+
+    if ret and frame is not None:
+        return frame
+    else:
+        logger.warning(f'Failed to capture video from {url}')
+        return None
+>>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
