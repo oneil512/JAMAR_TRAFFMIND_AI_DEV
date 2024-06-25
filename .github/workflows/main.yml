@@ -16,7 +16,7 @@ jobs:
     - name: Write SSH key to a temporary file
 
       run: |
-        'cat "$SSH_KEY" > streamlit.pem'
+        'printf "$SSH_KEY" > streamlit.pem'
         chmod 600 streamlit.pem
       shell: bash
       env:
