@@ -17,6 +17,8 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 S3_BUCKET = 'jamar'
 UPLOAD_FOLDER = 'client_upload/'
 
+logger.warning("test")
+
 # Function to upload file to S3
 def upload_to_s3(file, bucket, folder, object_name=None):
     if object_name is None:
