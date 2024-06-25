@@ -18,7 +18,6 @@ jobs:
       run: |
         echo "$SSH_KEY" > /tmp/streamlit.pem
         chmod 600 /tmp/streamlit.pem
-      shell: bash
       env:
         SSH_KEY: ${{secrets.STREAMLIT}}
 
