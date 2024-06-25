@@ -156,6 +156,7 @@ def start_sagemaker_processing_job(infile, machine, environment_variables, write
     # Start the processing job
     response = sagemaker_client.create_processing_job(**processing_job_config)
     print(f"Processing job started with ARN: {response['ProcessingJobArn']}")
+    return response
 
 def run(infile, write_video=True):
     classifier_yaml_path = "classifier/yolo_cls/yolov8m-cls-6.yaml"
