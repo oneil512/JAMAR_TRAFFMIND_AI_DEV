@@ -16,11 +16,11 @@ jobs:
     - name: Write SSH key to a temporary file
 
       run: |
-        'echo "$SSH_KEY" > streamlit.pem'
+        'cat "$SSH_KEY" > streamlit.pem'
         chmod 600 streamlit.pem
       shell: bash
       env:
-        SSH_KEY: ${{toJSON(secrets.STREAMLIT)}}
+        SSH_KEY: ${{secrets.STREAMLIT}}
 
     - name: Pull latest code from GitHub
       run: |
