@@ -16,16 +16,16 @@ jobs:
     - name: Write SSH key to a temporary file
 
       run: |
-        'echo "$SSH_KEY" > /tmp/streamlit.pem'
-        chmod 600 /tmp/streamlit.pem
+        'echo "$SSH_KEY" > streamlit.pem'
+        chmod 600 streamlit.pem
       shell: bash
       env:
         SSH_KEY: ${{secrets.STREAMLIT}}
 
     - name: Pull latest code from GitHub
       run: |
-        ssh -i /tmp/streamlit.pem ec2-user@ec2-18-221-41-210.us-east-2.compute.amazonaws.com 'cd /home/ec2-user/JAMAR_TRAFFMIND_AI_DEV && git pull'
+        ssh -i streamlit.pem ec2-user@ec2-18-221-41-210.us-east-2.compute.amazonaws.com 'cd /home/ec2-user/JAMAR_TRAFFMIND_AI_DEV && git pull'
 
     - name: Cleanup temporary file
       run: |
-        rm /tmp/streamlit.pem
+        rm streamlit.pem
