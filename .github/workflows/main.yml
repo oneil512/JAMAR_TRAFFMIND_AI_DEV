@@ -16,11 +16,11 @@ jobs:
     - name: Write SSH key to a temporary file
 
       run: |
-        'printf "$SSH_KEY" > streamlit.pem'
+        python -c "import os; file = open('streamlit.pem', 'w'); file.write(os.environ['STREAMLIT']); file.close()"
         chmod 600 streamlit.pem
       shell: bash
       env:
-        SSH_KEY: ${{secrets.STREAMLIT}}
+        STREAMLIT: ${{secrets.STREAMLIT}}
 
     - name: Pull latest code from GitHub
       run: |
