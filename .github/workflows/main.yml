@@ -13,6 +13,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Write SSH key to a temporary file
+      run: |
+        echo "${{ secrets.STREAMLIT }}" > /tmp/ssh_key
+        chmod 600 /tmp/ssh_key
+
     - name: Pull latest code from GitHub
       run: |
-        ssh -i ${{ secrets.STREAMLIT }} ec2-user@ec2-18-221-41-210.us-east-2.compute.amazonaws.com 'cd /home/ec2-user/JAMAR_TRAFFMIND_AI_DEV && git pull'
+        ssh -i /tmp/ssh_key ec2-user@ec2-18-221-41-210.us-east-2.compute.amazonaws.com 'cd /home/ec2-user/JAMAR_TRAFFMIND_AI_DEV && git pull'
+
+    - name: Cleanup temporary file
+      run: |
+        rm /tmp/ssh_key
