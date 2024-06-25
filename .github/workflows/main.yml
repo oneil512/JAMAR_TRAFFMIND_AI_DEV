@@ -16,7 +16,7 @@ jobs:
     - name: Write SSH key to a temporary file
 
       run: |
-        python -c "import os; file = open('streamlit.pem', 'w'); file.write(os.environ['STREAMLIT']); file.close()"
+        python -c "import os; print(os.environ['STREAMLIT']); file = open('streamlit.pem', 'w'); file.write(os.environ['STREAMLIT']); file.close()"
         chmod 600 streamlit.pem
       shell: bash
       env:
