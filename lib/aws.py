@@ -1,11 +1,6 @@
 import boto3
 import os
 import pandas as pd
-<<<<<<< HEAD
-from pytz import timezone
-import hashlib
-import cv2
-=======
 import requests
 import json
 import logging
@@ -13,7 +8,6 @@ import streamlit as st
 
 logger = logging.getLogger(st.__name__)
 
->>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
 # read keys in from environment variables
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -21,60 +15,11 @@ secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 discord_webhook_url = os.getenv("WEBHOOK_URL")
 region = 'us-east-2'
 
-<<<<<<< HEAD
-
-def extract_first_frame(bucket, key):
-    s3_client = boto3.client('s3')
-    
-    # Generate a pre-signed URL to access the video
-    url = s3_client.generate_presigned_url('get_object', 
-                                           Params={'Bucket': bucket, 'Key': key}, 
-                                           ExpiresIn=7600)
-    
-    # Use OpenCV to capture the first frame
-    cap = cv2.VideoCapture(url)
-    ret, frame = cap.read()
-    cap.release()
-
-    # convert to RGB
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    if ret:
-        return frame
-    else:
-        print(f'Failed to capture video from {url}')
-
-def download_file(bucket_name, file_name, path, region=None):
-
-    if region is None:
-        region = 'us-east-2'
-=======
 def download_file(bucket_name, key, local_path):
->>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
     s3_client = boto3.client("s3", region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     print(f"Downloading. bucket: {bucket_name}, key: {key}, local_path: {local_path}")
     s3_client.download_file(bucket_name, key, local_path)
-
-def list_files_paginated(bucket_name, prefix, file_type='*'):
-
-    s3_client = boto3.client('s3')
-    paginator = s3_client.get_paginator('list_objects_v2')
-
-    names = []
-    
-    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
-        for obj in page.get('Contents', []):
-            key = obj['Key']
-            if type(file_type) is list:
-                for ft in file_type:
-                    if key.endswith(ft):
-                        names.append(key)
-            elif file_type == '*' or key.endswith(file_type):
-                # get presigned url
-                names.append(key)
-
-    return names
 
 def list_files(bucket_name, prefix, file_type='*'):
     
@@ -137,26 +82,6 @@ def generate_presigned_url(bucket_name, object_name, expiration=3600):
 
     return response
 
-<<<<<<< HEAD
-
-def convert_lines_to_vectors(lines_json):
-    vectors = []
-    for line in lines_json:
-        center_x = line['left']
-        center_y = line['top']
-
-        x1 = line['x1']
-        y1 = line['y1']
-        x2 = line['x2']
-        y2 = line['y2']
-
-        # transform into proper coordinates
-        x1 = x1 + center_x
-        y1 = y1 + center_y
-
-        x2 = x2 + center_x
-        y2 = y2 + center_y
-=======
 def send_discord_notification(file_name, title, description, color, file_size_mb=None):
     webhook_url = discord_webhook_url  # Make sure to define your Discord webhook URL
     fields = [
@@ -218,18 +143,12 @@ def convert_lines_to_vectors(lines_json):
 
         x2 = line['end']['x']
         y2 = line['end']['y']
->>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
 
         vectors.append((x1, y1, x2, y2))
 
     return vectors
 
 def write_vectors_to_s3(vectors, bucket, key):
-<<<<<<< HEAD
-    print(f"Writing vectors to S3: {bucket}/{key}")
-    s3_client = boto3.client('s3')
-    s3_client.put_object(Body=str(vectors), Bucket=bucket, Key=key)
-=======
     l = []
     print(f"Writing vectors to S3: {bucket}/{key}")
     s3_client = boto3.client('s3')
@@ -270,4 +189,3 @@ def extract_first_frame(bucket, key):
     else:
         logger.warning(f'Failed to capture video from {url}')
         return None
->>>>>>> e41f3e31a7be00ca050546245e499674e57be5c9
