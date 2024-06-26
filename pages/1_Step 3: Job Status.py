@@ -7,6 +7,7 @@ import os
 region = 'us-east-2'
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+connection_string = os.getenv("POSTGRES_CONNECTION_STRING")
 
 def generate_presigned_url(object_s3_uri, expiration=3600):
     s3_client = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
@@ -25,77 +26,37 @@ import pandas as pd
 import os
 from pytz import timezone
 
-def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
-    sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    
-    # List all processing jobs
-    response = sagemaker_client.list_processing_jobs(MaxResults=25)
-    processing_jobs = response['ProcessingJobSummaries']
-    
-    filtered_jobs = []
-    
-    for job in processing_jobs:
-        job_name = job['ProcessingJobName']
+def get_s3_status(client):    
+    try:
+        # Create the database engine
+        engine = create_engine(connection_string)
         
-        # Get the tags for the processing job
-        tags_response = sagemaker_client.list_tags(
-            ResourceArn=job['ProcessingJobArn']
+        # Define your query with a parameter placeholder for client
+        query = """
+        SELECT "File Name", "Start Time", "End Time", "Duration (hrs)", "Status", "Write Video", "Output Path"
+        FROM traffmind
+        WHERE "Client" = :client
+        ORDER BY "Start Time" DESC;
+        """
+
+        # Execute the query and fetch the data into a DataFrame
+        with engine.connect() as connection:
+            result = connection.execute(text(query), {'client': client})
+            df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        
+        # Generate download links for rows with Write Video == True and Status == Completed
+        df['Download Link'] = df.apply(
+            lambda row: generate_presigned_url(
+                f"{row['Output Path']}/{row['File Name'].replace('.mp4', '').replace('.h264', '')}_post_process_tracks.mp4"
+            ) if row['Write Video'] and row['Status'] == 'Completed' else None, axis=1
         )
-        tags = tags_response['Tags']
         
-        # Check if the tag exists
-        for tag in tags:
-            if tag['Key'] == tag_key and tag['Value'] == tag_value:
-                job_details = sagemaker_client.describe_processing_job(
-                    ProcessingJobName=job_name
-                )
-                creation_time = job_details['CreationTime']
-                end_time = job_details.get('ProcessingEndTime')
-                duration = (end_time - creation_time).total_seconds() / 3600 if end_time else None
-                status = job_details['ProcessingJobStatus']
-                
-                # Extract S3Input for InputName = input_path
-                s3_input = None
-                for input_item in job_details['ProcessingInputs']:
-                    if input_item['InputName'] == 'input_path':
-                        s3_input = input_item['S3Input']['S3Uri']
-                        break
-                
-                # Extract only the file name from the S3 URI
-                file_name = os.path.basename(s3_input) if s3_input else None
-
-                # Extract S3Output for OutputName = output_video
-                s3_output = None
-                for output_item in job_details['ProcessingOutputConfig']['Outputs']:
-                    if output_item['OutputName'] == 'output_video':
-                        s3_output = output_item['S3Output']['S3Uri']
-                        break
-                
-                download_link = None
-                if status == 'Completed' and s3_output:
-                    output_video_path = f"{s3_output}/{file_name.replace('.mp4', '').replace('.h264', '')}_post_process_tracks.mp4"
-                    download_link = generate_presigned_url(output_video_path)
-                
-                filtered_jobs.append({
-                    'File Name': file_name,
-                    'Start Time': creation_time,
-                    'End Time': end_time,
-                    'Duration (hrs)': round(duration, 1) if duration else None,
-                    'Status': status,
-                    'Download Link': download_link
-                })
-                break
-    
-    if not filtered_jobs:
-        return pd.DataFrame(columns=['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link'])
-
-    df = pd.DataFrame(filtered_jobs)
-    est = timezone('America/New_York')    
-    df['Start Time'] = pd.to_datetime(df['Start Time']).dt.tz_convert(est).dt.strftime('%Y-%m-%d %I:%M %p')
-    df.sort_values(by=['Start Time'], ascending=False)
-    df['End Time'] = df['End Time'].apply(lambda x: pd.to_datetime(x).tz_convert(est).strftime('%Y-%m-%d %I:%M %p') if pd.notnull(x) else None)
-    return df
-
+        # Select only the required columns for the final DataFrame
+        df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link']]
+        
+        return df
+    except Exception as e:
+        print(f"An error occurred: {e}")
     
 def show_table_with_links(df):
     df['Download Link'] = df['Download Link'].apply(lambda x: f'<a href="{x}" target="_blank">Download</a>' if x is not None else "")
