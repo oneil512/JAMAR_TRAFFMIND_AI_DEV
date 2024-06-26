@@ -53,7 +53,6 @@ def get_s3_status(client):
         print(f"An error occurred: {e}")
     
 def show_table_with_links(df):
-    df['Download Link'] = df['Download Link'].apply(lambda x: f'<a href="{x}" target="_blank">Download</a>' if x is not None else "")
     st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
 st.set_page_config(page_title="Traffic Tracker - Processed Videos", layout="wide")
