@@ -75,12 +75,12 @@ refresh = st.button('Refresh Data', key='refresh')
 
 if 'first_load' not in st.session_state:
     st.session_state['first_load'] = True
-    data_df = get_s3_status('Client', 'Jamar', region, access_key, secret_key)
+    data_df = get_s3_status('Jamar')
     show_table_with_links(data_df)
 
 if 'first_load' not in st.session_state or refresh:
     try:
-        data_df = get_s3_status('Client', 'Jamar', region, access_key, secret_key)
+        data_df = get_s3_status('Jamar')
         show_table_with_links(data_df)
         st.session_state['first_load'] = False
     except Exception as e:
