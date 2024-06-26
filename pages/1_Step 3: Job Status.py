@@ -1,7 +1,6 @@
 import boto3
 from sqlalchemy import create_engine, text
 import pandas as pd
-from pytz import timezone
 import streamlit as st
 import os
 
@@ -9,7 +8,6 @@ region = 'us-east-2'
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 connection_string = os.getenv("POSTGRES_CONNECTION_STRING")
-
 
 def generate_presigned_url(object_s3_uri, expiration=3600):
     s3_client = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
@@ -72,15 +70,14 @@ Welcome to the TraffMind AI Job Status page. Follow the steps below to check the
 refresh = st.button('Refresh Data', key='refresh')
 
 if 'first_load' not in st.session_state:
-    st.session_state['first_load'] = True
+    st.session_state['first_load'] = False
     data_df = get_s3_status('Jamar')
     show_table_with_links(data_df)
 
-if refresh or st.session_state['first_load']:
+if refresh:
     try:
         data_df = get_s3_status('Jamar')
         show_table_with_links(data_df)
-        st.session_state['first_load'] = False
     except Exception as e:
         st.error(f"No jobs have been submitted yet. Please submit a job to view processed videos.")
         st.stop()
