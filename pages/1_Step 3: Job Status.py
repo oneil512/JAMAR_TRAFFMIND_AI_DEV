@@ -8,7 +8,7 @@ import os
 region = 'us-east-2'
 access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-connection_string = st.secrets["POSTGRES_CONNECTION_STRING"]
+connection_string = os.getenv("POSTGRES_CONNECTION_STRING")
 
 def generate_presigned_url(object_s3_uri, expiration=3600):
     s3_client = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
