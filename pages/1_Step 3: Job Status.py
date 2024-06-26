@@ -46,7 +46,7 @@ def get_s3_status(client):
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
                 
         # Select only the required columns for the final DataFrame
-        df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link']]
+        df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status']]
         
         return df
     except Exception as e:
