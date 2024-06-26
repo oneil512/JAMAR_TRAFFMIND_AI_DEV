@@ -22,12 +22,7 @@ def generate_presigned_url(object_s3_uri, expiration=3600):
         return None
     return response
 
-import boto3
-import pandas as pd
-import os
-from pytz import timezone
-
-def get_s3_status(client):    
+def get_s3_status(client):
     try:
         # Create the database engine
         engine = create_engine(connection_string)
@@ -44,14 +39,22 @@ def get_s3_status(client):
         with engine.connect() as connection:
             result = connection.execute(text(query), {'client': client})
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
-                
+        
+        # Generate download links for rows with Write Video == True and Status == Completed
+        df['Download Link'] = df.apply(
+            lambda row: generate_presigned_url(
+                f"{row['Output Path']}/{row['File Name'].replace('.mp4', '').replace('.h264', '')}_post_process_tracks.mp4"
+            ) if row['Write Video'] and row['Status'] == 'Completed' else None, axis=1
+        )
+        
         # Select only the required columns for the final DataFrame
-        df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status']]
+        df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link']]
         
         return df
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+        return pd.DataFrame(columns=['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link'])
+
 def show_table_with_links(df):
     st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
@@ -71,7 +74,7 @@ if 'first_load' not in st.session_state:
     data_df = get_s3_status('Jamar')
     show_table_with_links(data_df)
 
-if 'first_load' not in st.session_state or refresh:
+if refresh or st.session_state['first_load']:
     try:
         data_df = get_s3_status('Jamar')
         show_table_with_links(data_df)
