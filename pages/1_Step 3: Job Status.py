@@ -10,6 +10,7 @@ access_key = os.getenv("AWS_ACCESS_KEY_ID")
 secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 connection_string = os.getenv("POSTGRES_CONNECTION_STRING")
 
+
 def generate_presigned_url(object_s3_uri, expiration=3600):
     s3_client = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     bucket_name, object_key = object_s3_uri.replace("s3://", "").split("/", 1)
@@ -56,6 +57,7 @@ def get_s3_status(client):
         return pd.DataFrame(columns=['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link'])
 
 def show_table_with_links(df):
+    df['Download Link'] = df['Download Link'].apply(lambda x: f'<a href="{x}" target="_blank">Download</a>' if x is not None else "")
     st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
 st.set_page_config(page_title="Traffic Tracker - Processed Videos", layout="wide")
