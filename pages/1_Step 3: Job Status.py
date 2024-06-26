@@ -44,14 +44,7 @@ def get_s3_status(client):
         with engine.connect() as connection:
             result = connection.execute(text(query), {'client': client})
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
-        
-        # Generate download links for rows with Write Video == True and Status == Completed
-        df['Download Link'] = df.apply(
-            lambda row: generate_presigned_url(
-                f"{row['Output Path']}/{row['File Name'].replace('.mp4', '').replace('.h264', '')}_post_process_tracks.mp4"
-            ) if row['Write Video'] and row['Status'] == 'Completed' else None, axis=1
-        )
-        
+                
         # Select only the required columns for the final DataFrame
         df = df[['File Name', 'Start Time', 'End Time', 'Duration (hrs)', 'Status', 'Download Link']]
         
