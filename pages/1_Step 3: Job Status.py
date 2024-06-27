@@ -20,10 +20,6 @@ def generate_presigned_url(object_s3_uri, expiration=3600):
         return None
     return response
 
-import boto3
-import pandas as pd
-import os
-from pytz import timezone
 
 def get_s3_status(tag_key, tag_value, region, access_key, secret_key):
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)

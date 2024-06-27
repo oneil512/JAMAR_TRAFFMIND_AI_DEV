@@ -21,13 +21,15 @@ def start_sagemaker_processing_job(infile, machine, environment_variables, write
 
     region = 'us-east-2'
     logger.info(f" starting sagemaker processing job for {infile}")
-    VERSION = "1.2.40"
+    VERSION = "1.2.42"
 
     # Initialize the SageMaker client
     sagemaker_client = boto3.client('sagemaker', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
     # Specify the S3 bucket and file paths
+    client = "jamar"
     bucket = "jamar"
+
 
     # This maps model class ids to client facing class names
     # Eg model assigns 0 to motorcycle, but motorcycle is class 1 in 13 bin classification scheme
@@ -43,17 +45,14 @@ def start_sagemaker_processing_job(infile, machine, environment_variables, write
     epoch_time = int(time.time())
     version_number = VERSION.replace(".", "-")
 
-    hash_object = hashlib.md5(infile.encode())
-    hash_filename = hash_object.hexdigest()
-
     VECTORS_PREFIX = f"submissions/{base_filename}"
-    processing_job_name = f"fn-{hash_filename}-vn-{version_number}-e-{epoch_time}"
+    processing_job_name = f"{client[:5]}-{version_number}-{epoch_time}"
 
     # Add vectors prefix to environment variables
     environment_variables["VECTORS_PREFIX"] = VECTORS_PREFIX
     environment_variables["OUTPUT_PATH"] = output_path
     environment_variables["VERSION"] = VERSION
-    environment_variables["CLIENT"] = "Jamar"
+    environment_variables["CLIENT"] = client
     environment_variables["INPUT_VIDEO_PATH"] = input_path
     environment_variables["CLASSIFIER_MODEL_PATH"] = classifier_model_path
     environment_variables["CLASS_MAPPING_PATH"] = class_mapping_path
