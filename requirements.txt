@@ -3,3 +3,4 @@ opencv-python-headless
 boto3
 pandas
 streamlit-drawable-canvas==0.9.3
+sqlalchemy
