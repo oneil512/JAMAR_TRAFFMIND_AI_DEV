@@ -148,6 +148,72 @@ def convert_lines_to_vectors(lines_json):
 
     return vectors
 
+def upsert_row_to_db(row):
+
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import sessionmaker
+
+    connection_str = "postgresql://postgres:kfldkaosdjc356s@traffmind-instance.cha2gms4k5kn.us-east-2.rds.amazonaws.com:5432/traffmind"
+    engine = create_engine(connection_str)
+
+    # Create a session
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # Define a mapping between input row keys and database column names
+    column_mapping = {
+        "ID": "ID",
+        "File Name": "File_Name",
+        "Start Time": "Start_Time",
+        "End Time": "End_Time",
+        "Duration (hrs)": "Duration_hrs",
+        "Status": "Status",
+        "Client": "Client",
+        "Version": "Version",
+        "Machine": "Machine",
+        "Name": "Name",
+        "Processing Job Name": "Processing_Job_Name",
+        "Write Video": "Write_Video",
+        "Output Path": "Output_Path",
+        "Input Video Path": "Input_Video_Path",
+        "Class Mapping Path": "Class_Mapping_Path",
+        "Classifier Model Path": "Classifier_Model_Path",
+        "Environment Variables": "Environment_Variables",
+        "Number_of_Frames": "Number_of_Frames",
+        "Detector_Model": "Detector_Model",
+        "Every": "Every",
+        "Vectors": "Vectors",
+    }
+
+    inverse_column_mapping = {v: k for k, v in column_mapping.items()}
+
+    # Create a dictionary to map the input row to the correct parameter names
+    mapped_row = {inverse_column_mapping.get(k, k): v for k, v in row.items()}
+
+    # If 'ID' is provided, attempt to update the existing row
+    if "ID" in mapped_row:
+        update_sql = f"""
+            UPDATE processing
+            SET {', '.join([f'"{inverse_column_mapping[col]}" = :{col}' for col in row.keys() if col != "ID"])}
+            WHERE "ID" = :ID
+        """
+        s = text(update_sql)
+        session.execute(s, row)
+        session.commit()
+        return mapped_row["ID"]
+    else:
+        # Insert new record and return its ID
+        columns = ', '.join(f'"{inverse_column_mapping[col]}"' for col in row.keys())
+        placeholders = ', '.join(f':{col}' for col in row.keys())
+        insert_sql = f'INSERT INTO traffmind ({columns}) VALUES ({placeholders}) RETURNING "ID"'
+
+        s = text(insert_sql)
+        result = session.execute(s, row)
+        inserted_id = result.fetchone()[0]
+        session.commit()
+        return inserted_id
+
+
 def write_vectors_to_s3(vectors, bucket, key):
     l = []
     print(f"Writing vectors to S3: {bucket}/{key}")

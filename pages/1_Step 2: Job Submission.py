@@ -153,7 +153,15 @@ if st.button("Submit Job"):
         v = {}
         for i, (x1, y1, x2, y2) in enumerate(st.session_state['vectors']):
             v[st.session_state.get(f'button_{i}')] = ((x1, y1), (x2, y2))
+
+        row = {
+            "File Name": st.session_state.get("bg_video_name"),
+            "Vectors": json.dumps(v),
+            "Write Video": write_video,
+            "Status": "In Progress",
+        }
         
+        #upsert_row_to_db(row)
         write_vectors_to_s3(v, "jamar", f'submissions/{st.session_state.get("bg_video_name").replace("." + file_type, "")}/vectors.txt')
 
         run(st.session_state.get("bg_video_name"), write_video=write_video)
