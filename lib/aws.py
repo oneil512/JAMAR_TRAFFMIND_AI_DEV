@@ -153,7 +153,9 @@ def upsert_row_to_db(row):
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
 
-    connection_str = "postgresql://postgres:kfldkaosdjc356s@traffmind-instance.cha2gms4k5kn.us-east-2.rds.amazonaws.com:5432/traffmind"
+    password = os.getenv("DB_PASSWORD")
+
+    connection_str = f"postgresql://postgres:{password}@traffmind-instance.cha2gms4k5kn.us-east-2.rds.amazonaws.com:5432/traffmind"
     engine = create_engine(connection_str)
 
     # Create a session
